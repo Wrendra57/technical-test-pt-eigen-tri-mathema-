@@ -34,6 +34,9 @@ module.exports = (sequelize, DataTypes) => {
     modelName: 'Borrow',
     tableName: 'borrow',
     timestamps: true,
+    createdAt: 'created_at',
+    updatedAt: 'updated_at',
+    deletedAt: 'deleted_at'
   });
   return Borrow;
 };

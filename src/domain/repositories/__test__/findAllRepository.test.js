@@ -25,7 +25,7 @@ jest.mock('../../../infrastructure/database/models/index.js', () => {
     };
 });
 
-describe('findAll', () => {
+describe('findAllUserRepository', () => {
     afterEach(() => {
         jest.clearAllMocks();
     });

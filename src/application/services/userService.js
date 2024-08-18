@@ -18,7 +18,7 @@ const findAllUser = async ({limit,offset, requestId}) => {
       data: result
     };
   } catch (e) {
-    console.error(`Request ID: ${requestId} - Service error:`, e.message);
+    console.error(`Request ID: ${requestId} - User Service error:`, e.message);
     return {
       request_id: requestId,
       code:500,

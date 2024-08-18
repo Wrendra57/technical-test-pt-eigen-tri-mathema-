@@ -1,7 +1,7 @@
-const userRepository = require("../../../domain/repositories/userRepository");
-const {findAllUser} = require("../userService");
+const userRepository = require("../../../../domain/repositories/userRepository");
+const {findAllUser} = require("../../userService");
 
-jest.mock("../../../domain/repositories/userRepository");
+jest.mock("../../../../domain/repositories/userRepository");
 
 describe("findAllUsers", () => {
     afterEach(() => {
@@ -46,7 +46,7 @@ describe("findAllUsers", () => {
         userRepository.findAll.mockRejectedValue(new Error('Database query error: Database error'))
 
         const result = await findAllUser({ limit: 10, offset: 1, requestId: 'test-id' })
-        console.info(result)
+
         expect(result).toEqual({
             request_id: 'test-id',
             code: 500,

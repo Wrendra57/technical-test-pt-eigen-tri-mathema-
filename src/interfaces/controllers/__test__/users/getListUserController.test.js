@@ -1,8 +1,9 @@
-const userService = require('../../../application/services/userService');
-const toTemplateResponseApi = require('../../../interfaces/utils/templateResponeApi');
-const {getListUser} = require("../userController");
-jest.mock('../../../application/services/userService')
-jest.mock('../../utils/templateResponeApi')
+const userService = require('../../../../application/services/userService');
+const toTemplateResponseApi = require('../../../utils/templateResponeApi');
+const {getListUser} = require("../../userController");
+
+jest.mock('../../../../application/services/userService')
+jest.mock('../../../utils/templateResponeApi')
 
 describe('get list user', () => {
     let req;

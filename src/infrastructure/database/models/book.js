@@ -22,14 +22,27 @@ module.exports = (sequelize, DataTypes) => {
     title: DataTypes.STRING,
     author: DataTypes.STRING,
     stock: DataTypes.INTEGER,
-    created_at: DataTypes.DATE,
-    updated_at: DataTypes.DATE,
-    deleted_at: {type:DataTypes.DATE, allowNull: true},
+    created_at: {
+      type: DataTypes.DATE,
+      field: 'created_at'
+    },
+    updated_at: {
+      type: DataTypes.DATE,
+      field: 'updated_at'
+    },
+    deleted_at: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      field: 'deleted_at'
+    }
   }, {
     sequelize,
     modelName: 'Book',
     tableName: 'book',
     timestamps: true,
+    createdAt: 'created_at',
+    updatedAt: 'updated_at',
+    deletedAt: 'deleted_at'
   });
   return Book;
 };

@@ -23,7 +23,9 @@
     "verbose": true,
     "transform": {
       "^.+\\.[t|j]sx?$": "babel-jest"
-    }
+    },
+    "maxConcurrency": 1,
+    "maxWorkers": 1
   },
   "dependencies": {
     "axios": "^1.7.4",

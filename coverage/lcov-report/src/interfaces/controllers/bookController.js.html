@@ -3,7 +3,7 @@
 <html lang="en">
 
 <head>
-    <title>Code coverage report for src/interfaces/controllers/userController.js</title>
+    <title>Code coverage report for src/interfaces/controllers/bookController.js</title>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="../../../prettify.css" />
     <link rel="stylesheet" href="../../../base.css" />
@@ -19,13 +19,13 @@
 <body>
 <div class='wrapper'>
     <div class='pad1'>
-        <h1><a href="../../../index.html">All files</a> / <a href="index.html">src/interfaces/controllers</a> userController.js</h1>
+        <h1><a href="../../../index.html">All files</a> / <a href="index.html">src/interfaces/controllers</a> bookController.js</h1>
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>39/39</span>
+                <span class='fraction'>40/40</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>39/39</span>
+                <span class='fraction'>40/40</span>
             </div>
         
             
@@ -105,6 +105,7 @@
 <a name='L40'></a><a href='#L40'>40</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">7x</span>
 <span class="cline-any cline-yes">7x</span>
 <span class="cline-any cline-yes">7x</span>
@@ -140,47 +141,46 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">const userService = require("../../application/services/userService");
+<span class="cline-any cline-yes">1x</span></td><td class="text"><pre class="prettyprint lang-js">const bookService = require('../../application/services/bookService')
 const toTemplateResponseApi = require('../utils/templateResponeApi')
-const getListUser = async (req, res) =&gt; {
-  const requestId = req.requestId
-  let limit = req.query.limit
-  if (limit === undefined || limit === "") {
-    limit = 5
-  } else {
-    limit = Number(limit)
-    if (isNaN(limit) || limit &lt; 1) {
-      console.error(`Request ID: ${requestId} - Limit error: Limit Must Be Positive Number`);
-      return res.status(400).json({request_id: requestId,
-        status: "Error",
-        message: "Limit Must Be Positive Number",
-        data: null});
+&nbsp;
+const getListBooks = async (req, res) =&gt; {
+    const requestId = req.requestId
+    let limit = req.query.limit
+    if (limit === undefined || limit === "") {
+        limit = 5
+    } else {
+        limit = Number(limit)
+        if (isNaN(limit) || limit &lt; 1) {
+            console.error(`Request ID: ${requestId} - Limit error: Limit Must Be Positive Number`);
+            return res.status(400).json({request_id: requestId,
+                status: "Error",
+                message: "Limit Must Be Positive Number",
+                data: null});
+        }
     }
-  }
 &nbsp;
-  let offset = req.query.page
-  if (offset === undefined || offset === "") {
-    offset = 1
-  } else {
-    offset = Number(offset)
-    if (isNaN(offset) || offset &lt; 1) {
-      console.error(`Request ID: ${requestId} - Offset error: Limit Must Be Positive Number`);
-      return res.status(400).json({request_id: requestId,
-        status: "Error",
-        message: "Offset Must Be Positive Number",
-        data: null});
+    let offset = req.query.page
+    if (offset === undefined || offset === "") {
+        offset = 1
+    } else {
+        offset = Number(offset)
+        if (isNaN(offset) || offset &lt; 1) {
+            console.error(`Request ID: ${requestId} - Offset error: Limit Must Be Positive Number`);
+            return res.status(400).json({request_id: requestId,
+                status: "Error",
+                message: "Offset Must Be Positive Number",
+                data: null});
+        }
     }
-  }
-  const users =await userService.findAllUser({limit:limit,offset:offset,requestId:requestId});
+    const books = await bookService.findAllBooks({limit:limit,offset:offset,requestId:requestId})
 &nbsp;
-  return res.status(users.code).json(toTemplateResponseApi(users));
-};
+    return res.status(books.code).json(toTemplateResponseApi(books))
+}
 &nbsp;
-module.exports = {
-  getListUser,
-};
-&nbsp;</pre></td></tr></table></pre>
+module.exports={
+    getListBooks
+}</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->
