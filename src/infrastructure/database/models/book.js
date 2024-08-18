@@ -22,12 +22,13 @@ module.exports = (sequelize, DataTypes) => {
     title: DataTypes.STRING,
     author: DataTypes.STRING,
     stock: DataTypes.INTEGER,
-    createdAt: DataTypes.DATE,
-    updatedAt: DataTypes.DATE,
-    deletedAt: {type:DataTypes.DATE, allowNull: true},
+    created_at: DataTypes.DATE,
+    updated_at: DataTypes.DATE,
+    deleted_at: {type:DataTypes.DATE, allowNull: true},
   }, {
     sequelize,
-    modelName: 'books',
+    modelName: 'Book',
+    tableName: 'book',
     timestamps: true,
   });
   return Book;

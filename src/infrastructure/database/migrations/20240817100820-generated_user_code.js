@@ -10,7 +10,7 @@ module.exports = {
           seq_num INT;
           user_code TEXT;
       BEGIN
-          seq_num = currval('users_id_seq');
+          seq_num = currval('user_id_seq');
           
           IF seq_num <= 999 THEN
               user_code = 'M' || LPAD(seq_num::TEXT, 3, '0');

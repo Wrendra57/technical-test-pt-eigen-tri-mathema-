@@ -26,12 +26,13 @@ module.exports = (sequelize, DataTypes) => {
     checkout_at: DataTypes.DATE,
     due_date: DataTypes.DATE,
     return_date: DataTypes.DATE,
-    createdAt: DataTypes.DATE,
-    updatedAt: DataTypes.DATE,
-    deletedAt: {type:DataTypes.DATE, allowNull: true},
+    created_at: DataTypes.DATE,
+    updated_at: DataTypes.DATE,
+    deleted_at: {type:DataTypes.DATE, allowNull: true},
   }, {
     sequelize,
-    modelName: 'borrows',
+    modelName: 'Borrow',
+    tableName: 'borrow',
     timestamps: true,
   });
   return Borrow;
