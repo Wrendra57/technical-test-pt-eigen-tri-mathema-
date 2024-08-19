@@ -32,6 +32,17 @@ const findAllBooks = async ({limit, offset, requestId}) =>{
 
 const createBooks = async ({code, title, author, stock, requestId}) => {
     try {
+        const getBook = await bookRepository.findOneBook({code:code, requestId:requestId});
+        if (getBook !== null) {
+            console.error(`Request ID: ${requestId} - Create Books Service Validation error || Code already exists`);
+            return {
+                request_id: requestId,
+                code:400,
+                status: "Error",
+                message: "Code already exists",
+                data: null
+            }
+        }
         const params = {
             code:code,
             author:author,
