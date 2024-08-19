@@ -29,6 +29,32 @@ const findAllUser = async ({limit,offset, requestId}) => {
   }
 };
 
+const createUser = async ({name, requestId}) =>{
+  try {
+    const defaultQuota =2
+    const params = {
+      name:name, quota: defaultQuota
+    }
+    const create = await userRepository.insert({params, requestId:requestId});
+
+    return {
+      request_id: requestId,
+      code:200,
+      status: "Success",
+      message: "Success Create Data Users",
+      data: create
+    };
+  } catch (e) {
+    console.error(`Request ID: ${requestId} - User Service error:`, e.message);
+    return {
+      request_id: requestId,
+      code:500,
+      status: "Error",
+      message: "Internal Server Error",
+      data: null,
+    };
+  }
+}
 module.exports = {
-  findAllUser,
+  findAllUser,createUser
 };

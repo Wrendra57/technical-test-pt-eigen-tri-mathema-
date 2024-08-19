@@ -15,7 +15,7 @@ module.exports = (sequelize, DataTypes) => {
   }
   User.init({
     id: {type:DataTypes.INTEGER, autoIncrement:true},
-    code: {type:DataTypes.STRING, primaryKey: true},
+    code: {type:DataTypes.STRING, primaryKey: true, allowNull: true ,defaultValue:sequelize.literal('generate_user_code()')},
     name: DataTypes.STRING,
     quota: DataTypes.INTEGER,
     penalty_date: DataTypes.DATE,

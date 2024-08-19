@@ -34,6 +34,15 @@ const getListUser = async (req, res) => {
   return res.status(users.code).json(toTemplateResponseApi(users));
 };
 
+const createUser = async (req,res)=>{
+  const requestId = req.requestId
+
+  let name = req.body.name;
+
+  const create = await userService.createUser({name,requestId})
+
+  return res.status(create.code).json(toTemplateResponseApi(create));
+}
 module.exports = {
-  getListUser,
+  getListUser,createUser
 };

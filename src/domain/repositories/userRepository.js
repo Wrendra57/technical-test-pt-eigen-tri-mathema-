@@ -4,6 +4,7 @@ const {
 
 } = require("../../infrastructure/database/models/index.js");
 const models = require('../../infrastructure/database/models/index.js');
+const tty = require("node:tty");
 const User = models.User
 
 const findAll = async ({limit, offset,requestId}) => {
@@ -47,6 +48,16 @@ const findAll = async ({limit, offset,requestId}) => {
   }
 };
 
+const insert = async ({params,requestId})=>{
+  try{
+      let user = await User.create(params);
+      return user;
+  } catch (error) {
+    console.error(`Request ID: ${requestId} - User Repository Insert error:`, error.message);
+    throw new Error("Database query error: " + error.message);
+  }
+}
 module.exports = {
   findAll,
+  insert
 };
