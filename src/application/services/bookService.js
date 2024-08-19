@@ -30,4 +30,32 @@ const findAllBooks = async ({limit, offset, requestId}) =>{
     }
 }
 
-module.exports ={findAllBooks}
+const createBooks = async ({code, title, author, stock, requestId}) => {
+    try {
+        const params = {
+            code:code,
+            author:author,
+            stock:stock,
+            title:title,
+        }
+        console.log(params)
+        const book = await bookRepository.insert({params, requestId})
+        return {
+            request_id: requestId,
+            code:200,
+            status: "Success",
+            message: "Success Create Books",
+            data: book
+        };
+    } catch (e) {
+        console.error(`Request ID: ${requestId} - Book Service error:`, e.message);
+        return {
+            request_id: requestId,
+            code:500,
+            status: "Error",
+            message: "Internal Server Error",
+            data: null,
+        };
+    }
+}
+module.exports ={findAllBooks,createBooks}

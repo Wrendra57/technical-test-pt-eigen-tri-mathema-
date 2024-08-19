@@ -35,6 +35,19 @@ const getListBooks = async (req, res) => {
     return res.status(books.code).json(toTemplateResponseApi(books))
 }
 
+const createBook = async (req,res) =>{
+    const requestId = req.requestId
+
+    const book = await bookService.createBooks({
+        code:req.body.code,
+        title:req.body.title,
+        author:req.body.author,
+        stock:req.body.stock,
+        requestId:requestId
+    })
+
+    return res.status(book.code).json(toTemplateResponseApi(book))
+}
 module.exports={
-    getListBooks
+    getListBooks,createBook
 }

@@ -8,9 +8,11 @@
     "dev": "nodemon -q src/app.js",
     "test": "NODE_ENV=test jest --forceExit",
     "db:create": "npx sequelize-cli db:create",
+    "db:create:all": "npx sequelize-cli db:create && npx sequelize-cli db:create --env test",
     "db:migrate": "npx sequelize-cli db:migrate",
-    "db:seed": "npx sequelize-cli db:seed:all",
-    "db:rollback": "npx sequelize-cli db:migrate:undo:all",
+    "db:migrate:all": "npx sequelize-cli db:migrate && npx sequelize-cli db:migrate --env test",
+    "db:seed:all": "npx sequelize-cli db:seed:all && npx sequelize-cli db:seed:all --env test",
+    "db:rollback:all": "npx sequelize-cli db:migrate:undo:all && npx sequelize-cli db:migrate:undo:all --env test ",
     "db:reset": "npx sequelize-cli db:migrate:undo:all && npx sequelize-cli db:migrate && npx sequelize-cli db:seed:all"
   },
   "author": "",

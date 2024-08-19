@@ -1,7 +1,7 @@
 const express = require('express');
 const {getListUser, createUser} = require('../controllers/userController');
 const {validation} = require("../middleware/validations");
-const {createUserValidation} = require("../middleware/validations/userValidation");
+const {createUserValidation} = require("../middleware/validations/userValidations");
 const apiRouter = express.Router();
 
 apiRouter.get("/api/users", getListUser)

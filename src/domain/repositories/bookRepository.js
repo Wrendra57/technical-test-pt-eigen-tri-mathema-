@@ -10,11 +10,22 @@ const findAllBook = async ({limit, offset, requestId})=>{
         const totalBook = await Book.count({where:{deleted_at:null}})
         return {books: books, totalBook: totalBook}
     } catch (error) {
-        console.error(`Request ID: ${requestId} - Book Repository error:`, error.message);
+        console.error(`Request ID: ${requestId} - FindAll Book Repository error:`, error.message);
         throw new Error("Database query error: " + error.message);
     }
 }
 
+const insert = async ({params, requestId}) => {
+  try {
+      const book = await Book.create(params);
+      console.log(book);
+      return book
+  } catch (error) {
+      console.error(`Request ID: ${requestId} - Insert Book Repository error:`, error.message);
+      throw new Error("Database query error: " + error.message);
+  }
+}
+
 module.exports = {
-    findAllBook,
+    findAllBook,insert
 }
