@@ -1,8 +1,6 @@
-const {findAll} = require('../userRepository')
+const {findAll, insert} = require('../userRepository')
 const {
     sequelize,
-    Sequelize,
-
 } = require("../../../infrastructure/database/models/index.js");
 const models = require('../../../infrastructure/database/models/index.js');
 const User = models.User
@@ -21,6 +19,7 @@ jest.mock('../../../infrastructure/database/models/index.js', () => {
         Sequelize: actualSequelize.Sequelize,
         User: {
             count: jest.fn(),
+            create: jest.fn(),
         },
     };
 });
@@ -64,4 +63,62 @@ describe('findAllUserRepository', () => {
         expect(sequelize.query).toHaveBeenCalledWith(expect.any(String));
 
     })
+})
+
+describe('insertUserRepository', ()=>{
+    afterEach(() => {
+        jest.clearAllMocks();
+    });
+    it('should success create user and return user data', async () => {
+        const mockUsers= {
+                code: "M013",
+                name: "test name",
+                quota: 2,
+                updated_at: "2024-08-19T12:07:32.081Z",
+                created_at: "2024-08-19T12:07:32.081Z",
+                id: 1,
+                penalty_date: null,
+                deleted_at: null,
+            }
+
+
+
+        User.create.mockResolvedValue(mockUsers)
+
+        const params = {
+            name: mockUsers.name,
+            quota: mockUsers.quota
+        }
+        const result = await insert({ params, requestId: 'test-id' });
+
+        expect(result).toEqual(mockUsers);
+        expect(User.create).toHaveBeenCalledWith(params);
+        expect(User.create).toHaveBeenCalledTimes(1)
+    });
+    it('should failed create user and return error', async () => {
+        const mockUsers= {
+            code: "M013",
+            name: "test name",
+            quota: 2,
+            updated_at: "2024-08-19T12:07:32.081Z",
+            created_at: "2024-08-19T12:07:32.081Z",
+            id: 1,
+            penalty_date: null,
+            deleted_at: null,
+        }
+
+
+
+        User.create.mockRejectedValue(new Error(`Database error`));
+
+        const params = {
+            name: mockUsers.name,
+            quota: mockUsers.quota
+        }
+        await expect(insert({ params, requestId: 'test-id' })).rejects.toThrow(
+            'Database query error: Database error'
+        );
+
+        expect(User.create).toHaveBeenCalledWith(params);
+    });
 })

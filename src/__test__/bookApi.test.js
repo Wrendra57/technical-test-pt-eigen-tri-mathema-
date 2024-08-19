@@ -1,6 +1,6 @@
-const app = require('../../app')
+const app = require('../app')
 const request = require("supertest");
-const models = require('../../infrastructure/database/models/index.js')
+const models = require('../infrastructure/database/models')
 const Book = models.Book
 
 beforeAll((done) => {
@@ -11,7 +11,7 @@ afterAll((done) => {
     server.close(done);
 });
 
-jest.mock('../../infrastructure/database/models/index.js', ()=>{
+jest.mock('../infrastructure/database/models', ()=>{
     return {
         Book:{
             count: jest.fn(),

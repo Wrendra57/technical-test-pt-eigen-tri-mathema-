@@ -1,9 +1,9 @@
-const bookRepository = require('../../../../domain/repositories/bookRepository')
-const {findAllBooks} =require('../../bookService')
-const userRepository = require("../../../../domain/repositories/userRepository");
-const {findAllUser} = require("../../userService");
+const bookRepository = require('../../../domain/repositories/bookRepository')
+const {findAllBooks} =require('../bookService')
+const userRepository = require("../../../domain/repositories/userRepository");
+const {findAllUser} = require("../userService");
 
-jest.mock('../../../../domain/repositories/bookRepository')
+jest.mock('../../../domain/repositories/bookRepository')
 describe('findAllBooksService', () => {
     afterEach(() => {
         jest.clearAllMocks();

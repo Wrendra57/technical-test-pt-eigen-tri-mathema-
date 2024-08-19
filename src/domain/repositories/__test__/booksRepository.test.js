@@ -1,13 +1,13 @@
-const {findAllBook} = require('../../bookRepository')
+const {findAllBook} = require('../bookRepository')
 const {
     sequelize,
     Sequelize,
-} = require("../../../../infrastructure/database/models/index.js");
-const models = require('../../../../infrastructure/database/models/index.js');
-const {findAll} = require("../../userRepository");
+} = require("../../../infrastructure/database/models");
+const models = require('../../../infrastructure/database/models');
+const {findAll} = require("../userRepository");
 const Book = models.Book
 
-jest.mock('../../../../infrastructure/database/models/index.js', () => {
+jest.mock('../../../infrastructure/database/models', () => {
     const actualSequelize = jest.requireActual('sequelize');
     const SequelizeMock = jest.fn(() => ({
         query: jest.fn(),

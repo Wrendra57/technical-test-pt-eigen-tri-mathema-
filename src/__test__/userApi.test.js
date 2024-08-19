@@ -1,10 +1,10 @@
-const app = require('../../app')
+const app = require('../app')
 const request = require("supertest");
 const {
     sequelize,
     Sequelize,
-} = require("../../infrastructure/database/models/index.js");
-const models = require('../../infrastructure/database/models/index.js')
+} = require("../infrastructure/database/models");
+const models = require('../infrastructure/database/models')
 const User = models.User
 beforeAll((done) => {
 
@@ -142,6 +142,106 @@ describe('Test List User || GET Test API /api/users', () => {
             .finally(() => {
                 mockQuery.mockRestore();  // Restore mocking setelah selesai
                 mockCount.mockRestore();
+            });
+    })
+})
+
+describe('Test Create User || POST /api/users', ()=>{
+    afterEach(() => {
+        jest.clearAllMocks();
+        jest.restoreAllMocks();
+    });
+
+    it ('should return 200 OK create user and return data user', async () => {
+        const url = `/api/users`
+
+        return request(server)
+            .post(url)
+            .send({name: 'john'})
+            .then((res)=>{
+                expect(res.status).toBe(200);
+                expect(res.body.data).not.toEqual(null)
+                expect(res.body.status).toEqual("Success")
+                expect(res.body.message).toEqual("Success Create Data Users")
+                expect(res.body.request_id).not.toBe(undefined)
+            })
+    })
+
+    it ('should return 400 Error Validation Name is Required', async () => {
+        const url = `/api/users`
+
+        return request(server)
+            .post(url)
+            .then((res)=>{
+                expect(res.status).toBe(400);
+                expect(res.body.data).toEqual(null)
+                expect(res.body.status).toEqual("Error")
+                expect(res.body.message).toEqual("Name is required")
+                expect(res.body.request_id).not.toBe(undefined)
+            })
+    })
+    it ('should return 400 Error Validation Name must be at least 3 characters', async () => {
+        const url = `/api/users`
+
+        return request(server)
+            .post(url)
+            .send({name:"na"})
+            .then((res)=>{
+                expect(res.status).toBe(400);
+                expect(res.body.data).toEqual(null)
+                expect(res.body.status).toEqual("Error")
+                expect(res.body.message).toEqual("Name must be at least 3 characters")
+                expect(res.body.request_id).not.toBe(undefined)
+            })
+    })
+
+    it ('should return 400 Error Validation Name must be maximum 255 characters', async () => {
+
+        const url = `/api/users`
+
+        return request(server)
+            .post(url)
+            .send({name:"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse.\n"})
+            .then((res)=>{
+                expect(res.status).toBe(400);
+                expect(res.body.data).toEqual(null)
+                expect(res.body.status).toEqual("Error")
+                expect(res.body.message).toEqual("Name must be maximum 255 characters")
+                expect(res.body.request_id).not.toBe(undefined)
+            })
+    })
+
+    it ('should return 400 Error Validation Name must be only alphabet', async () => {
+        const url = `/api/users`
+
+        return request(server)
+            .post(url)
+            .send({name:"sdwdaf3"})
+            .then((res)=>{
+                expect(res.status).toBe(400);
+                expect(res.body.data).toEqual(null)
+                expect(res.body.status).toEqual("Error")
+                expect(res.body.message).toEqual("Name must be only alphabet")
+                expect(res.body.request_id).not.toBe(undefined)
+            })
+    })
+
+    it ('should return 500 Error Internal Server Error', async () => {
+        const mockCreate = jest.spyOn(User, 'create').mockRejectedValue(new Error("Database Error"));
+        const url = `/api/users`
+
+        return request(server)
+            .post(url)
+            .send({name:"sdwdaf"})
+            .then((res)=>{
+                expect(res.status).toBe(500);
+                expect(res.body.data).toEqual(null)
+                expect(res.body.status).toEqual("Error")
+                expect(res.body.message).toEqual("Internal Server Error")
+                expect(res.body.request_id).not.toBe(undefined)
+            }).finally(() => {
+                mockCreate.mockRestore();
+
             });
     })
 })

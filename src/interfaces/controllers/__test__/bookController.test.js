@@ -1,10 +1,10 @@
-const bookService = require('../../../../application/services/bookService')
-const toTemplateResponseApi = require('../../../utils/templateResponeApi');
-const {getListBooks} = require('../../bookController');
+const bookService = require('../../../application/services/bookService')
+const toTemplateResponseApi = require('../../utils/templateResponeApi');
+const {getListBooks} = require('../bookController');
 
 
-jest.mock('../../../../application/services/bookService')
-jest.mock('../../../utils/templateResponeApi')
+jest.mock('../../../application/services/bookService')
+jest.mock('../../utils/templateResponeApi')
 
 describe('get list user', () => {
     let req;

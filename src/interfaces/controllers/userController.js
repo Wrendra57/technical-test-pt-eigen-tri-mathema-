@@ -1,5 +1,6 @@
 const userService = require("../../application/services/userService");
 const toTemplateResponseApi = require('../utils/templateResponeApi')
+
 const getListUser = async (req, res) => {
   const requestId = req.requestId
   let limit = req.query.limit
