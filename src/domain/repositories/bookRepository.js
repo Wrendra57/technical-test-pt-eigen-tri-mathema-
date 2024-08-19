@@ -17,8 +17,7 @@ const findAllBook = async ({limit, offset, requestId})=>{
 
 const insert = async ({params, requestId}) => {
   try {
-      const book = await Book.create(params);
-      return book
+      return await Book.create(params);
   } catch (error) {
       console.error(`Request ID: ${requestId} - Insert Book Repository error:`, error.message);
       throw new Error("Database query error: " + error.message);
@@ -27,12 +26,11 @@ const insert = async ({params, requestId}) => {
 
 const findOneBook = async ({code, requestId})=>{
     try {
-        const book = await Book.findOne({
+        return await Book.findOne({
             where: {
                 code:code
             }
         })
-        return book
     } catch (error) {
         console.error(`Request ID: ${requestId} - FindOne Book Repository error:`, error.message);
         throw new Error("Database query error: " + error.message);

@@ -49,7 +49,6 @@ const createBooks = async ({code, title, author, stock, requestId}) => {
             stock:stock,
             title:title,
         }
-        console.log(params)
         const book = await bookRepository.insert({params, requestId})
         return {
             request_id: requestId,

@@ -1,10 +1,10 @@
-const {findAllBook} = require('../bookRepository')
+const {findAllBook, insert, findOneBook} = require('../bookRepository')
 const {
     sequelize,
     Sequelize,
 } = require("../../../infrastructure/database/models");
 const models = require('../../../infrastructure/database/models');
-const {findAll} = require("../userRepository");
+const {Error} = require("sequelize");
 const Book = models.Book
 
 jest.mock('../../../infrastructure/database/models', () => {
@@ -19,7 +19,9 @@ jest.mock('../../../infrastructure/database/models', () => {
         Sequelize: actualSequelize.Sequelize,
         Book: {
             count: jest.fn(),
-            findAll: jest.fn()
+            findAll: jest.fn(),
+            create: jest.fn(),
+            findOne: jest.fn()
         },
     };
 });
@@ -69,3 +71,123 @@ describe('findAllBookRepository', () => {
 
     })
 })
+
+describe('createBookRepository || Book Repository',  ()=>{
+    afterEach(() => {
+        jest.clearAllMocks();
+    });
+    it('should success create book return books', async ()=>{
+        const mockBooks= {
+                id: 1,
+                code: "JK-01",
+                title: "Books Testing",
+                author: "Books author testing",
+                stock: 1,
+                created_at: "2024-08-18T12:40:08.128Z",
+                updated_at: "2024-08-18T12:40:08.128Z",
+                deleted_at: null
+            }
+        Book.create.mockResolvedValue(mockBooks)
+
+        const params = {
+            code:mockBooks.code,
+            author:mockBooks.author,
+            stock:mockBooks.stock,
+            title:mockBooks.title,
+        }
+        const result = await insert({ params, requestId: 'test-id' });
+
+        expect(result).toEqual(mockBooks);
+        expect(Book.create).toHaveBeenCalledWith(params);
+    })
+
+    it('should failed create book return error', async ()=>{
+        const mockBooks= {
+            id: 1,
+            code: "JK-01",
+            title: "Books Testing",
+            author: "Books author testing",
+            stock: 1,
+            created_at: "2024-08-18T12:40:08.128Z",
+            updated_at: "2024-08-18T12:40:08.128Z",
+            deleted_at: null
+        }
+        Book.create.mockRejectedValue(new Error(`Database error`));
+
+        const params = {
+            code:mockBooks.code,
+            author:mockBooks.author,
+            stock:mockBooks.stock,
+            title:mockBooks.title,
+        }
+       await expect(insert({ params, requestId: 'test-id' })).rejects.toThrow(
+            'Database query error: Database error'
+        );
+
+        expect(Book.create).toHaveBeenCalledWith(params);
+    })
+})
+
+describe('findOneBook || Book Repository',  ()=>{
+    afterEach(() => {
+        jest.clearAllMocks();
+    });
+    it('should success find a book and return books', async ()=>{
+        const mockBooks= {
+            id: 1,
+            code: "JK-01",
+            title: "Books Testing",
+            author: "Books author testing",
+            stock: 1,
+            created_at: "2024-08-18T12:40:08.128Z",
+            updated_at: "2024-08-18T12:40:08.128Z",
+            deleted_at: null
+        }
+        Book.findOne.mockResolvedValue(mockBooks)
+
+        const result = await findOneBook({ code:mockBooks.code, requestId: 'test-id' });
+
+        expect(result).toEqual(mockBooks);
+        expect(Book.findOne).toHaveBeenCalledWith({"where": {"code": mockBooks.code}});
+    })
+
+    it('should null find a book and return books', async ()=>{
+        const mockBooks= {
+            id: 1,
+            code: "JK-01",
+            title: "Books Testing",
+            author: "Books author testing",
+            stock: 1,
+            created_at: "2024-08-18T12:40:08.128Z",
+            updated_at: "2024-08-18T12:40:08.128Z",
+            deleted_at: null
+        }
+        Book.findOne.mockResolvedValue(null)
+
+        const result = await findOneBook({ code:mockBooks.code, requestId: 'test-id' });
+
+        expect(result).toEqual(null);
+        expect(Book.findOne).toHaveBeenCalledWith({"where": {"code": mockBooks.code}});
+    })
+
+    it('should failed find book return error', async ()=>{
+        const mockBooks= {
+            id: 1,
+            code: "JK-01",
+            title: "Books Testing",
+            author: "Books author testing",
+            stock: 1,
+            created_at: "2024-08-18T12:40:08.128Z",
+            updated_at: "2024-08-18T12:40:08.128Z",
+            deleted_at: null
+        }
+        Book.findOne.mockRejectedValue(new Error(`Database error`));
+
+        await expect(findOneBook({ code:mockBooks.code, requestId: 'test-id' })).rejects.toThrow(
+            'Database query error: Database error'
+        );
+
+        expect(Book.findOne).toHaveBeenCalledWith({"where": {"code": mockBooks.code}});
+    })
+})
+
