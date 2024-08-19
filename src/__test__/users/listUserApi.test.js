@@ -1,17 +1,28 @@
 const app = require('../../app')
 const request = require("supertest");
+const {
+    sequelize,
+    Sequelize,
+} = require("../../infrastructure/database/models/index.js");
+const models = require('../../infrastructure/database/models/index.js')
+const User = models.User
 beforeAll((done) => {
+
     server = app.listen(done);
 });
 
 afterAll((done) => {
+
     server.close(done);
 });
 
 describe('Test List User || GET Test API /api/users', () => {
-
+    afterEach(() => {
+        jest.clearAllMocks();
+        jest.restoreAllMocks();
+    });
     it ('should return 200 OK and list user', async () => {
-
+        jest.clearAllMocks();
         const limit = 10
         const page = 1
         const url = `/api/users?limit=${limit}&page=${page}`
@@ -23,7 +34,7 @@ describe('Test List User || GET Test API /api/users', () => {
                 expect(res.body.data).not.toEqual(null)
 
             })
-    },30000)
+    })
     it ('should return 200 OK and list user with undefined limit', async () => {
 
         const page = 1
@@ -36,7 +47,7 @@ describe('Test List User || GET Test API /api/users', () => {
                 expect(res.body.data).not.toEqual(null)
 
             })
-    },30000)
+    })
     it ('should return 200 OK and list user with empty limit', async () => {
         const limit = ""
         const page = 1
@@ -49,7 +60,7 @@ describe('Test List User || GET Test API /api/users', () => {
                 expect(res.body.data).not.toEqual(null)
 
             })
-    },30000)
+    })
     it ('should return 400 Error with invalid limit', async () => {
         const limit = "1a"
         const page = "1"
@@ -62,7 +73,7 @@ describe('Test List User || GET Test API /api/users', () => {
                 expect(res.body.data).toEqual(null)
 
             })
-    },30000)
+    })
     it ('should return 200 OK and list user with undefined offset', async () => {
         const limit = "10"
 
@@ -77,7 +88,7 @@ describe('Test List User || GET Test API /api/users', () => {
                 expect(res.body.status).toEqual("Success")
                 expect(res.body.request_id).not.toBe(undefined)
             })
-    },30000)
+    })
     it ('should return 200 OK and list user with empty offset', async () => {
         const limit = "10"
         const page = ""
@@ -93,7 +104,7 @@ describe('Test List User || GET Test API /api/users', () => {
                 expect(res.body.request_id).not.toBe(undefined)
 
             })
-    },30000)
+    })
     it ('should return 400 Error with invalid offset', async () => {
         const limit = "10"
         const page = "1a"
@@ -109,5 +120,28 @@ describe('Test List User || GET Test API /api/users', () => {
                 expect(res.body.request_id).not.toBe(undefined)
 
             })
-    },30000)
+    })
+    it ('should return 500 Internal Server Error', async () => {
+        const mockQuery = jest.spyOn(sequelize, 'query').mockRejectedValue(new Error(`Database error`));
+        const mockCount = jest.spyOn(User, 'count').mockResolvedValue(0);
+
+        const limit = "10"
+        const page = "1"
+        const url = `/api/users?limit=${limit}&page=${page}`
+
+        return request(server)
+            .get(url)
+            .then((res)=>{
+                expect(res.status).toBe(500);
+                expect(res.body.data).toEqual(null)
+                expect(res.body.message).toEqual("Internal Server Error")
+                expect(res.body.status).toEqual("Error")
+                expect(res.body.request_id).not.toBe(undefined)
+
+            })
+            .finally(() => {
+                mockQuery.mockRestore();  // Restore mocking setelah selesai
+                mockCount.mockRestore();
+            });
+    })
 })

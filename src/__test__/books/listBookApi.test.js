@@ -1,5 +1,7 @@
 const app = require('../../app')
 const request = require("supertest");
+const models = require('../../infrastructure/database/models/index.js')
+const Book = models.Book
 
 beforeAll((done) => {
     server = app.listen(done);
@@ -9,7 +11,19 @@ afterAll((done) => {
     server.close(done);
 });
 
+jest.mock('../../infrastructure/database/models/index.js', ()=>{
+    return {
+        Book:{
+            count: jest.fn(),
+            findAll: jest.fn()
+        }
+    }
+})
+
 describe('Test List Book || GET Test API /api/books', () => {
+    afterEach(() => {
+        jest.clearAllMocks();
+    });
     it ('should return 200 OK and list books', async () => {
         const limit = 10
         const page = 1
@@ -22,7 +36,7 @@ describe('Test List Book || GET Test API /api/books', () => {
                 expect(res.body.data).not.toEqual(null)
 
             })
-    },30000)
+    })
     it ('should return 200 OK and list books with undefined limit', async () => {
 
         const page = 1
@@ -37,7 +51,7 @@ describe('Test List Book || GET Test API /api/books', () => {
                 expect(res.body.status).toEqual("Success")
                 expect(res.body.request_id).not.toBe(undefined)
             })
-    },30000)
+    })
     it ('should return 200 OK and list books with empty limit', async () => {
         const limit = ""
         const page = 1
@@ -52,7 +66,7 @@ describe('Test List Book || GET Test API /api/books', () => {
                 expect(res.body.status).toEqual("Success")
                 expect(res.body.request_id).not.toBe(undefined)
             })
-    },30000)
+    })
     it ('should return 400 Error with invalid limit', async () => {
         const limit = "1a"
         const page = "1"
@@ -67,7 +81,7 @@ describe('Test List Book || GET Test API /api/books', () => {
                 expect(res.body.status).toEqual("Error")
                 expect(res.body.request_id).not.toBe(undefined)
             })
-    },30000)
+    })
     it ('should return 200 OK and list books with undefined offset', async () => {
         const limit = "10"
 
@@ -82,7 +96,7 @@ describe('Test List Book || GET Test API /api/books', () => {
                 expect(res.body.status).toEqual("Success")
                 expect(res.body.request_id).not.toBe(undefined)
             })
-    },30000)
+    })
     it ('should return 200 OK and list books with empty offset', async () => {
         const limit = "10"
         const page = ""
@@ -98,7 +112,7 @@ describe('Test List Book || GET Test API /api/books', () => {
                 expect(res.body.request_id).not.toBe(undefined)
 
             })
-    },30000)
+    })
     it ('should return 400 Error with invalid offset', async () => {
         const limit = "10"
         const page = "1a"
@@ -114,5 +128,24 @@ describe('Test List Book || GET Test API /api/books', () => {
                 expect(res.body.request_id).not.toBe(undefined)
 
             })
-    },30000)
+    })
+    it ('should return 500 Error with internal server error', async () => {
+        Book.findAll.mockRejectedValue(new Error(`Database error`));
+        Book.count.mockResolvedValue(0)
+
+        const limit = "10"
+        const page = "1"
+        const url = `/api/books?limit=${limit}&page=${page}`
+
+        return request(server)
+            .get(url)
+            .then((res)=>{
+                expect(res.status).toBe(500);
+                expect(res.body.data).toEqual(null)
+                expect(res.body.message).toEqual("Internal Server Error")
+                expect(res.body.status).toEqual("Error")
+                expect(res.body.request_id).not.toBe(undefined)
+
+            })
+    })
 })

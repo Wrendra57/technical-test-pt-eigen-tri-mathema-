@@ -19,7 +19,10 @@ app.use(requestLoggerMiddleware)
 app.use(userRoutes)
 app.use(bookRoutes)
 app.get('/', (req, res) => {return res.status(200).json({ request_id:req.requestId,status: "success", message: "server already", data:null })})
-app.listen(port, ()=>{
-    console.log(`Listening on port ${port}`)
-})
+
+if (process.env.NODE_ENV !== 'test') {
+    app.listen(port, ()=>{
+        console.log(`Listening on port ${port}`)
+    })
+}
 module.exports = app
