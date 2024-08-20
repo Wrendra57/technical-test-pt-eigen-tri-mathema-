@@ -24,18 +24,36 @@ const insert = async ({params, requestId}) => {
   }
 }
 
-const findOneBook = async ({code, requestId})=>{
+const findOneBook = async ({code, requestId, transaction=null})=>{
     try {
-        return await Book.findOne({
-            where: {
-                code:code
-            }
-        })
+        const options = {
+            where: { code:code },
+        };
+        if (transaction) {
+            options.transaction = transaction;
+            options.lock = transaction.LOCK.UPDATE
+        }
+        return await Book.findOne(options)
     } catch (error) {
         console.error(`Request ID: ${requestId} - FindOne Book Repository error:`, error.message);
         throw new Error("Database query error: " + error.message);
     }
 }
+
+const update = async ({params, code, requestId, transaction=null})=>{
+    try {
+        const options ={where:{code:code}}
+        if (transaction){
+            options.transaction = transaction;
+            options.lock = transaction.LOCK.UPDATE
+        }
+        const update = await Book.update(params, options)
+        return update
+    } catch (error) {
+        console.error(`Request ID: ${requestId} - Update Book Repository error:`, error.message);
+        throw new Error("Database query error: " + error.message);
+    }
+}
 module.exports = {
-    findAllBook, insert, findOneBook
+    findAllBook, insert, findOneBook,update
 }

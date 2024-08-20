@@ -19,13 +19,6 @@ module.exports = {
       "min": 0,
       "acquire": 30000,
       "idle": 10000,
-      "afterCreate": (connection, done) => {
-        console.log('New connection created:', connection.processID);
-        done(null, connection);
-      },
-      "beforeDestroy": (connection) => {
-        console.log('Connection about to be destroyed:', connection.processID);
-      }
     }
   },
   "test": {
@@ -39,13 +32,6 @@ module.exports = {
       "min": 0,
       "acquire": 30000,
       "idle": 10000,
-      "afterCreate": (connection, done) => {
-        console.log('New connection created:', connection.processID);
-        done(null, connection);
-      },
-      "beforeDestroy": (connection) => {
-        console.log('Connection about to be destroyed:', connection.processID);
-      }
     }
   },
   "production": {
@@ -59,13 +45,6 @@ module.exports = {
       "min": 0,
       "acquire": 30000,
       "idle": 10000,
-      "afterCreate": (connection, done) => {
-        console.log('New connection created:', connection.processID);
-        done(null, connection);
-      },
-      "beforeDestroy": (connection) => {
-        console.log('Connection about to be destroyed:', connection.processID);
-      }
     }
   }
 }

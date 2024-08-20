@@ -2,6 +2,7 @@ const {
   sequelize,
 
 } = require("../../infrastructure/database/models/index.js");
+
 const models = require('../../infrastructure/database/models/index.js');
 const User = models.User
 
@@ -55,7 +56,47 @@ const insert = async ({params,requestId})=>{
     throw new Error("Database query error: " + error.message);
   }
 }
+
+const findOneUser = async ({code, requestId, transaction=null})=>{
+  try {
+    const options =  {
+      where: {
+        code:code
+      }
+    }
+    if (transaction){
+      options.transaction =transaction
+      options.lock = transaction.LOCK.UPDATE
+    }
+    return await User.findOne(options)
+  } catch (error) {
+    console.error(`Request ID: ${requestId} - FindOne User Repository error:`, error.message);
+    throw new Error("Database query error: " + error.message);
+  }
+}
+
+const update = async ({params, code, requestId, transaction=null}) => {
+  try{
+    const options =  {
+      where: {
+        code:code
+      }
+    }
+    if (transaction){
+      options.transaction =transaction
+      options.lock = transaction.LOCK.UPDATE
+    }
+    const update = await User.update(params, options);
+    console.log(update)
+    return update
+  } catch (error) {
+    console.error(`Request ID: ${requestId} - Update User Repository error:`, error.message);
+    throw new Error("Database query error: " + error.message);
+  }
+}
 module.exports = {
   findAll,
-  insert
+  insert,
+  findOneUser,
+  update
 };
