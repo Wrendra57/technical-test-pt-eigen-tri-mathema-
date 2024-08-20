@@ -1,5 +1,5 @@
 const yup = require('yup');
-const regex = /^[A-Za-z]+$/;
+const regex = /^[a-zA-Z\s]+$/;
 const createUserValidation = yup.object({
     body: yup.object({
         name: yup
@@ -9,6 +9,7 @@ const createUserValidation = yup.object({
             .max(255, 'Name must be maximum 255 characters')
             .matches(regex,{message:"Name must be only alphabet"})
     })
+
         .noUnknown(true)
 })
 

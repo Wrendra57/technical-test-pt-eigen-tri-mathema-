@@ -17,7 +17,7 @@ const createBookValidation = yup.object({
             .required('Author is required')
             .min(2, 'Author must be at least 2 characters')
             .max(255, "Author must be maximum 255 characters"),
-        stock: yup.number().required('Stock is required').min(1,"Stock must be at least 1"),
+        stock: yup.number().typeError('Stock must be number').required('Stock is required').positive("Stock must be at least 1").integer("Stock must be integer")
     })
         .noUnknown(true)
 })
