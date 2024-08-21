@@ -3,6 +3,7 @@ const bookRepository = require('../../domain/repositories/bookRepository')
 const borrowRepository = require('../../domain/repositories/borrowRepository')
 const sequelize = require('../../infrastructure/database/models').sequelize
 const date = require('../../interfaces/utils/date')
+
 const createBorrows= async ({codeUser,codeBook, requestId})=>{
     const transaction = await sequelize.transaction()
     try {
@@ -24,7 +25,7 @@ const createBorrows= async ({codeUser,codeBook, requestId})=>{
             }
         }
         if (getUser.quota <= 0 ){
-            transaction.rollback()
+            await transaction.rollback()
             console.error(`Request ID: ${requestId} - Create Borrow Service Get user || Quota user 0`);
             return {
                 request_id: requestId,
@@ -52,7 +53,7 @@ const createBorrows= async ({codeUser,codeBook, requestId})=>{
 
         // check book & stock
         if (getBooks === null) {
-            transaction.rollback()
+            await transaction.rollback()
             console.error(`Request ID: ${requestId} - Create Borrow Service Get book || Book not found`);
             return {
                 request_id: requestId,
@@ -63,7 +64,7 @@ const createBorrows= async ({codeUser,codeBook, requestId})=>{
             }
         }
         if (getBooks.stock <= 0 ) {
-            transaction.rollback()
+            await transaction.rollback()
             console.error(`Request ID: ${requestId} - Create Borrow Service Get book || Book stock is 0`);
             return {
                 request_id: requestId,
@@ -87,7 +88,7 @@ const createBorrows= async ({codeUser,codeBook, requestId})=>{
             userRepository.update({params:{quota:getUser.quota - 1}, code:codeUser, requestId, transaction}),
             bookRepository.update({params:{stock:getBooks.stock - 1}, code:codeBook, requestId,transaction})
         ])
-        transaction.commit()
+        await transaction.commit()
         const data = {
             book:{
                 code:getBooks.code,
@@ -106,7 +107,7 @@ const createBorrows= async ({codeUser,codeBook, requestId})=>{
         }
         return {
             request_id: requestId,
-            code:200,
+            code:201,
             status: "Success",
             message: "Success Create Borrow",
             data: data

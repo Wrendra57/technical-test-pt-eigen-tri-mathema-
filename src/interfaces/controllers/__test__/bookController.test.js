@@ -1,7 +1,6 @@
 const bookService = require('../../../application/services/bookService')
 const toTemplateResponseApi = require('../../utils/templateResponeApi');
 const {getListBooks, createBook} = require('../bookController');
-const userService = require("../../../application/services/userService");
 
 
 jest.mock('../../../application/services/bookService')
