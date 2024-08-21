@@ -7,8 +7,11 @@ const createBorrows= async ({codeUser,codeBook, requestId})=>{
     const transaction = await sequelize.transaction()
     try {
         // check user & quota
+        const [getUser, getBooks]= await Promise.all([
+            userRepository.findOneUser({code:codeUser, requestId:requestId, transaction:transaction}),
+            bookRepository.findOneBook(  {code:codeBook, requestId:requestId, transaction:transaction})
+        ])
 
-        const getUser = await userRepository.findOneUser({code:codeUser, requestId:requestId, transaction:transaction})
         if (getUser === null) {
             transaction.rollback()
             console.error(`Request ID: ${requestId} - Create Borrow Service Get user || User not found`);
@@ -31,10 +34,23 @@ const createBorrows= async ({codeUser,codeBook, requestId})=>{
                 data: null
             }
         }
+        if (getUser.penalty_date !== null) {
+            if (getUser.penalty_date > new Date()){
+                await transaction.rollback()
+                console.error(`Request ID: ${requestId} - Create Borrow Service Get user || User has penalty`);
+                return {
+                    request_id: requestId,
+                    code: 400,
+                    status: "Error",
+                    message: `User has penalty after ${getUser.penalty_date.toUTCString()}`,
+                    data: null
+                }
+            } else {
+                await userRepository.update({params:{penalty_date:null}, code:codeUser, requestId, transaction})
+            }
+        }
 
         // check book & stock
-        const getBooks = await bookRepository.findOneBook(  {code:codeBook, requestId:requestId, transaction:transaction})
-
         if (getBooks === null) {
             transaction.rollback()
             console.error(`Request ID: ${requestId} - Create Borrow Service Get book || Book not found`);
@@ -66,13 +82,11 @@ const createBorrows= async ({codeUser,codeBook, requestId})=>{
             checkout_at: now,
             due_date: dueDate,
         }
-
-        await borrowRepository.insert({params:borrowInsertParams, requestId,transaction})
-
-        await userRepository.update({params:{quota:getUser.quota - 1}, code:codeUser, requestId, transaction})
-
-        await bookRepository.update({params:{stock:getBooks.stock - 1}, code:codeBook, requestId,transaction})
-
+       await Promise.all([
+            borrowRepository.insert({params:borrowInsertParams, requestId,transaction}),
+            userRepository.update({params:{quota:getUser.quota - 1}, code:codeUser, requestId, transaction}),
+            bookRepository.update({params:{stock:getBooks.stock - 1}, code:codeBook, requestId,transaction})
+        ])
         transaction.commit()
         const data = {
             book:{
