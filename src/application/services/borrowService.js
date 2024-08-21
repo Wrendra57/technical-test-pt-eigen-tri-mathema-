@@ -7,8 +7,7 @@ const createBorrows= async ({codeUser,codeBook, requestId})=>{
     const transaction = await sequelize.transaction()
     try {
         // check user & quota
-        console.log("mulai" + codeUser)
-        console.log(new Date())
+
         const getUser = await userRepository.findOneUser({code:codeUser, requestId:requestId, transaction:transaction})
         if (getUser === null) {
             transaction.rollback()
@@ -33,12 +32,9 @@ const createBorrows= async ({codeUser,codeBook, requestId})=>{
             }
         }
 
-        console.log("get user harusnya antri lama" + codeUser)
-        console.log(new Date())
         // check book & stock
         const getBooks = await bookRepository.findOneBook(  {code:codeBook, requestId:requestId, transaction:transaction})
-        console.log("get book" + codeUser)
-        console.log(new Date())
+
         if (getBooks === null) {
             transaction.rollback()
             console.error(`Request ID: ${requestId} - Create Borrow Service Get book || Book not found`);
@@ -70,19 +66,14 @@ const createBorrows= async ({codeUser,codeBook, requestId})=>{
             checkout_at: now,
             due_date: dueDate,
         }
-        console.log("insert" + codeUser)
-        console.log(new Date())
+
         await borrowRepository.insert({params:borrowInsertParams, requestId,transaction})
-        console.log("user" + codeUser)
-        console.log(new Date())
+
         await userRepository.update({params:{quota:getUser.quota - 1}, code:codeUser, requestId, transaction})
-        console.log("book" + codeUser)
-        console.log(new Date())
+
         await bookRepository.update({params:{stock:getBooks.stock - 1}, code:codeBook, requestId,transaction})
 
         transaction.commit()
-        console.log("done" + codeUser)
-        console.log(new Date())
         const data = {
             book:{
                 code:getBooks.code,
