@@ -7,12 +7,10 @@ const {
 const models = require('../infrastructure/database/models')
 const User = models.User
 beforeAll((done) => {
-
     server = app.listen(done);
 });
 
 afterAll((done) => {
-
     server.close(done);
 });
 
@@ -32,7 +30,6 @@ describe('Test List User || GET Test API /api/users', () => {
             .then((res)=>{
                 expect(res.status).toBe(200);
                 expect(res.body.data).not.toEqual(null)
-
             })
     })
     it ('should return 200 OK and list user with undefined limit', async () => {

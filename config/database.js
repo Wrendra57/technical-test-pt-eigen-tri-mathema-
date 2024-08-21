@@ -6,7 +6,6 @@ const {
   DB_HOST ,
   DB_NAME,
 } = process.env;
-console.log(DB_USERNAME);
 module.exports = {
   "development": {
     "username": DB_USERNAME,

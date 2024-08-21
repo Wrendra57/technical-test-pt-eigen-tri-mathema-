@@ -409,16 +409,7 @@ describe('Test Create Book || POST Test API /api/books', () => {
     });
 
     it('should return 400 Code already exist', async () => {
-        const mockFind = jest.spyOn(Book, 'findOne').mockResolvedValue({ id: 1,
-            code: "JK-01",
-            title: "Books Testing",
-            author: "Books author testing",
-            stock: 1,
-            created_at: "2024-08-18T12:40:08.128Z",
-            updated_at: "2024-08-18T12:40:08.128Z",
-            deleted_at: null});
-
-        const body = {  code: `K-1${random}`,
+        const body = {  code: `JK-45`,
             title: "Test book",
             author: "dwdw",
             stock:3
@@ -433,10 +424,7 @@ describe('Test Create Book || POST Test API /api/books', () => {
                 expect(res.body.status).toEqual("Error")
                 expect(res.body.message).toEqual("Code already exists")
                 expect(res.body.request_id).not.toBe(undefined)
-            }).finally(() => {
-                mockFind.mockRestore();
-
-            });
+            })
     });
 
     it('should return 500 database Error find one repository', async () => {
