@@ -17,6 +17,29 @@ const createBorrowValidation = yup.object({
         .noUnknown(true)
 })
 
+const returnBorrowValidation = yup.object({
+    body: yup.object({
+        borrow_id: yup
+            .number()
+            .integer("Borrow ID must be a number")
+            .positive("Borrow ID must be a positive number")
+            .notRequired(),
+        code_user: yup
+            .string()
+            .min(2, "Code User must be at least 2 characters")
+            .max(10, "Code User must be maximum 10 characters")
+            .matches(regex, { message: "Code User must be Number, Alphabet, & '-'" })
+            .notRequired(),
+        code_book: yup
+            .string()
+            .min(2, "Code Book must be at least 2 characters")
+            .max(10, "Code Book must be maximum 10 characters")
+            .matches(regex, { message: "Code Book must be Number, Alphabet, & '-'" })
+            .notRequired()
+    })
+});
+
+
 module.exports={
-    createBorrowValidation
+    createBorrowValidation, returnBorrowValidation
 }
