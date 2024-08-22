@@ -1,0 +1,121 @@
+paths:
+  /api/books:
+    get:
+      summary: Get all books
+      description: Get all books with default limit 5 and pagination 1
+      parameters:
+        - name: limit
+          in: query
+          description: Limit of books to return, min 1
+          required: false
+          schema:
+            type: integer
+        - name: page
+          in: query
+          description: Page number to return, min 1
+          required: false
+          schema:
+            type: integer
+      tags:
+        - Book API
+      responses:
+        '200':
+          description: Success Retrieve Books
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/JsendResponse'
+                  - properties:
+                      data:
+                        allOf:
+                          - $ref: '#/components/schemas/Pagination'
+                          - properties:
+                              content:
+                                type: array
+                                items:
+                                  $ref: '#/components/schemas/Books'
+
+        '400':
+          description: Bad Request Because of invalid limit or page
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/JsendResponse'
+                  - properties:
+                      data:
+                        type: string
+                        nullable: true
+                        default: null
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/JsendResponse'
+                  - properties:
+                      data:
+                        type: string
+                        nullable: true
+                        default: null
+    post:
+      summary: Create a book
+      description: Create a book
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                  description: Book code
+                title:
+                  type: string
+                  description: Book title
+                author:
+                  type: string
+                  description: Author
+                stock:
+                  type: integer
+                  description: Stock
+      tags:
+        - Book API
+      responses:
+        '201':
+          description: Success Create Book
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/JsendResponse'
+                  - properties:
+                      data:
+                        $ref: '#/components/schemas/Books'
+        '400':
+          description: Bad Request Because of invalid request
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/JsendResponse'
+                  - properties:
+                      data:
+                        type: string
+                        nullable: true
+                        default: null
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/JsendResponse'
+                  - properties:
+                      data:
+                        type: string
+                        nullable: true
+                        default: null

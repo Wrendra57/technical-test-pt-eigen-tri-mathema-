@@ -110,3 +110,35 @@ components:
             nullable: true
             description: Deleted at
             example: null
+    Books:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Book ID
+        code:
+          type: string
+          description: Book code
+        title:
+          type: string
+          description: Book title
+        author:
+          type: string
+          description: Author
+        stock:
+          type: integer
+          description: Stock
+        created_at:
+          type: string
+          format: date-time
+          description: Created at
+        updated_at:
+          type: string
+          format: date-time
+          description: Updated at
+        deleted_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Deleted at
+          example: null
