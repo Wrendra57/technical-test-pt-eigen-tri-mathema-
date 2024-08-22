@@ -1,0 +1,112 @@
+components:
+  schemas:
+    JsendResponse:
+      type: object
+      required:
+        - data
+      properties:
+        request_id:
+          type: string
+          description: Request ID
+        status:
+          type: string
+          description: Status of the request
+        message:
+          type: string
+          description: Message of the request
+    User:
+      type: object
+      properties:
+        user_code:
+            type: string
+            description: User code
+        name:
+            type: string
+            description: User name
+        quota:
+            type: integer
+            description: User quota
+        penalty_date:
+            type: string
+            description: Penalty date
+        created_at:
+            type: string
+            description: Created at
+    Pagination:
+      type: object
+      required:
+        - content
+      properties:
+        currentPage:
+          type: integer
+          description: Current page
+        totalPages:
+            type: integer
+            description: Total pages
+        totalPerPage:
+            type: integer
+            description: Total per page
+        totalContent:
+            type: integer
+            description: Total content
+    Book_Borrowed:
+      type: object
+      properties:
+        borrow_id:
+            type: integer
+            description: Borrow ID
+        book_code:
+            type: string
+            description: Book code/id
+        checkout_at:
+            type: string
+            description: checkout date
+        due_date:
+            type: string
+            description: Due date
+        return_date:
+            type: null
+        book_title:
+            type: string
+            description: Book title
+        author:
+            type: string
+            description: Author
+    Created_User:
+        type: object
+        properties:
+          code:
+            type: string
+            description: User code
+          name:
+            type: string
+            description: User name
+          quota:
+            type: integer
+            description: User quota
+          updated_at:
+            type: string
+            format: date-time
+            description: Updated at
+            example: "2024-08-22T15:25:49.902Z"
+          created_at:
+            type: string
+            format: date-time
+            description: Created at
+            example: "2024-08-22T15:25:49.902Z"
+          id:
+            type: integer
+            description: User ID
+            example: 4
+          penalty_date:
+            type: string
+            format: date-time
+            nullable: true
+            description: Penalty date
+            example: null
+          deleted_at:
+            type: string
+            format: date-time
+            nullable: true
+            description: Deleted at
+            example: null

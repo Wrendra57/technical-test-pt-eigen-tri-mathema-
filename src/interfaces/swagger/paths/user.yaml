@@ -1,0 +1,123 @@
+paths:
+  /api/users:
+    get:
+      summary: Get all users
+      description: Get all users with default limit 5 and pagination 1
+      parameters:
+        - name: limit
+          in: query
+          description: Limit of users to return, min 1
+          required: false
+          schema:
+            type: integer
+        - name: page
+          in: query
+          description: Page number to return, min 1
+          required: false
+          schema:
+            type: integer
+      tags:
+        - User API
+      responses:
+        '200':
+          description: Success Retrieve Users
+          content:
+            application/json:
+              schema:
+               allOf:
+                 - $ref: '#/components/schemas/JsendResponse'
+                 - properties:
+                    data:
+                      allOf:
+                        - $ref: '#/components/schemas/Pagination'
+                        - properties:
+                            content:
+                              type: array
+                              items:
+                                allOf:
+                                  - $ref: '#/components/schemas/User'
+                                  - properties:
+                                      book_borrowed:
+                                        type: array
+                                        items:
+                                          allOf:
+                                            - $ref: '#/components/schemas/Book_Borrowed'
+        '400':
+          description: Bad Request Because of invalid limit or page
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/JsendResponse'
+                  - properties:
+                      data:
+                        type: string
+                        nullable: true
+                        default: null
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/JsendResponse'
+                  - properties:
+                      data:
+                        type: string
+                        nullable: true
+                        default: null
+    post:
+      summary: Create a user
+      description: Create a user with name, quota default 2
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  description: User name
+      tags:
+        - User API
+      responses:
+        '201':
+          description: Success Create User
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/JsendResponse'
+                  - properties:
+                      data:
+                        $ref: '#/components/schemas/Created_User'
+        '400':
+          description: Bad Request Because of invalid name (min=3, max=255, required, alphabet)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/JsendResponse'
+                  - properties:
+                      data:
+                        type: string
+                        nullable: true
+                        default: null
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/JsendResponse'
+                  - properties:
+                      data:
+                        type: string
+                        nullable: true
+                        default: null
+
+
+

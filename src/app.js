@@ -9,6 +9,12 @@ const userRoutes = require("./interfaces/routes/userRoutes")
 const bookRoutes = require('./interfaces/routes/bookRoutes')
 const borrowRoutes = require('./interfaces/routes/borrowRoutes')
 const requestLoggerMiddleware = require('./interfaces/middleware/requestLogger')
+const swaggerUi = require('swagger-ui-express')
+const swaggerJsdoc = require('swagger-jsdoc')
+const swaggerOptions = require('./interfaces/swagger/swaggerOptions')
+const swaggerSpec = swaggerJsdoc(swaggerOptions)
+
+
 const app = express()
 
 app.use(cors(false))
@@ -20,8 +26,9 @@ app.use(requestLoggerMiddleware)
 app.use(userRoutes)
 app.use(bookRoutes)
 app.use(borrowRoutes)
-app.get('/', (req, res) => {return res.status(200).json({ request_id:req.requestId,status: "success", message: "server already", data:null })})
 
+app.get('/', (req, res) => {return res.status(200).json({ request_id:req.requestId,status: "success", message: "server already", data:null })})
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 if (process.env.NODE_ENV !== 'test') {
     app.listen(port, ()=>{
         console.log(`Listening on port ${port}`)
