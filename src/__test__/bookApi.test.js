@@ -167,7 +167,7 @@ describe('Test Create Book || POST Test API /api/books', () => {
             .post(url)
             .send(body)
             .then((res)=>{
-                expect(res.status).toBe(200);
+                expect(res.status).toBe(201);
                 expect(res.body.data).not.toEqual(null)
                 expect(res.body.status).toEqual("Success")
                 expect(res.body.message).toEqual("Success Create Books")

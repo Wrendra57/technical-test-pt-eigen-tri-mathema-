@@ -1,5 +1,5 @@
 const borrowService = require('../../application/services/borrowService')
-const toTemplateResponseApi = require("../utils/templateResponeApi");
+const {toTemplateResponseApi} = require("../utils/templateResponeApi");
 
 const createBorrows = async (req,res) => {
     const requestId = req.requestId

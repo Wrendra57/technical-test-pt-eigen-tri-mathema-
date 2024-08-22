@@ -1,5 +1,5 @@
 const bookRepository = require('../../domain/repositories/bookRepository')
-
+const response = require('../../interfaces/utils/templateResponeApi')
 const findAllBooks = async ({limit, offset, requestId}) =>{
     try {
         const getBooks = await bookRepository.findAllBook({limit:limit, offset:(offset-1)*limit, requestId:requestId})
@@ -10,23 +10,10 @@ const findAllBooks = async ({limit, offset, requestId}) =>{
             totalContent: parseInt(getBooks.totalBook),
             content: getBooks.books,
         };
-
-        return {
-            request_id: requestId,
-            code:200,
-            status: "Success",
-            message: "Success Retrieve Data Books",
-            data: result
-        };
+        return response.success(requestId, result, "Success Retrieve Data Books")
     } catch (e) {
         console.error(`Request ID: ${requestId} - Book Service error:`, e.message);
-        return {
-            request_id: requestId,
-            code:500,
-            status: "Error",
-            message: "Internal Server Error",
-            data: null,
-        };
+        return  response.internalServerError(requestId)
     }
 }
 
@@ -35,13 +22,7 @@ const createBooks = async ({code, title, author, stock, requestId}) => {
         const getBook = await bookRepository.findOneBook({code:code, requestId:requestId});
         if (getBook !== null) {
             console.error(`Request ID: ${requestId} - Create Books Service Validation error || Code already exists`);
-            return {
-                request_id: requestId,
-                code:400,
-                status: "Error",
-                message: "Code already exists",
-                data: null
-            }
+            return  response.badRequest(requestId, "Code already exists")
         }
         const params = {
             code:code,
@@ -50,22 +31,12 @@ const createBooks = async ({code, title, author, stock, requestId}) => {
             title:title,
         }
         const book = await bookRepository.insert({params, requestId})
-        return {
-            request_id: requestId,
-            code:200,
-            status: "Success",
-            message: "Success Create Books",
-            data: book
-        };
+        return response.created(requestId, book, "Success Create Books")
+
     } catch (e) {
         console.error(`Request ID: ${requestId} - Book Service error:`, e.message);
-        return {
-            request_id: requestId,
-            code:500,
-            status: "Error",
-            message: "Internal Server Error",
-            data: null,
-        };
+        return response.internalServerError(requestId)
+
     }
 }
 

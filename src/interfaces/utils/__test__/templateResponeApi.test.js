@@ -1,4 +1,4 @@
-const toTemplateResponseApi = require('../templateResponeApi');
+const {toTemplateResponseApi} = require('../templateResponeApi');
 
 describe('toTemplateResponseApi', () => {
     it('should return the correct response object', () => {

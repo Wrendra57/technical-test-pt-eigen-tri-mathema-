@@ -1,4 +1,4 @@
-const toTemplateResponseApi = require("../../utils/templateResponeApi");
+const {toTemplateResponseApi} = require("../../utils/templateResponeApi");
 const validation = (schema)=> async (req,res,next)=>{
     try {
         await schema.validate({

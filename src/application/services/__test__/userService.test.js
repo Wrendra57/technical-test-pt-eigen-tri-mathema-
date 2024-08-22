@@ -84,7 +84,7 @@ describe("create User Service", () => {
 
         expect(result).toEqual({
             request_id: "test-id",
-            code:200,
+            code:201,
             status: "Success",
             message: "Success Create Data Users",
             data: mockUsersRepository

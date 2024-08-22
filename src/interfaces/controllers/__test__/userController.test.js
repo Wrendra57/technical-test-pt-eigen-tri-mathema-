@@ -1,5 +1,5 @@
 const userService = require('../../../application/services/userService');
-const toTemplateResponseApi = require('../../utils/templateResponeApi');
+const {toTemplateResponseApi} = require('../../utils/templateResponeApi');
 const {getListUser, createUser} = require("../userController");
 
 jest.mock('../../../application/services/userService')
@@ -273,7 +273,7 @@ describe('create user controller', () => {
 
         const mockServiceRespone = {
             request_id: "test-id",
-            code:200,
+            code:201,
             status: "Success",
             message: "Success Create Data Users",
             data: mockUsers
@@ -288,7 +288,7 @@ describe('create user controller', () => {
 
         await createUser(req,res)
 
-        expect(res.status).toHaveBeenCalledWith(200)
+        expect(res.status).toHaveBeenCalledWith(201)
         expect(res.json).toHaveBeenCalledWith({ request_id: mockServiceRespone.request_id,
             status: mockServiceRespone.status,
             message: mockServiceRespone.message,

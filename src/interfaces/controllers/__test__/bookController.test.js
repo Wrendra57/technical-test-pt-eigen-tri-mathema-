@@ -1,5 +1,5 @@
 const bookService = require('../../../application/services/bookService')
-const toTemplateResponseApi = require('../../utils/templateResponeApi');
+const {toTemplateResponseApi} = require('../../utils/templateResponeApi');
 const {getListBooks, createBook} = require('../bookController');
 
 
@@ -321,7 +321,7 @@ describe('create book test || Create Book Controller', () => {
     it('should success create book and return book data', async () => {
         const mockServiceResponse = {
             request_id: "test-id",
-            code:200,
+            code:201,
             status: "Success",
             message: "Success Create Books",
             data: mockBooks
@@ -338,7 +338,7 @@ describe('create book test || Create Book Controller', () => {
         req.body.stock = mockBooks.stock
 
         await createBook(req,res)
-        expect(res.status).toHaveBeenCalledWith(200)
+        expect(res.status).toHaveBeenCalledWith(201)
         expect(res.json).toHaveBeenCalledWith({ request_id: mockServiceResponse.request_id,
             status: mockServiceResponse.status,
             message: mockServiceResponse.message,

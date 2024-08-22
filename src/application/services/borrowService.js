@@ -3,6 +3,7 @@ const bookRepository = require('../../domain/repositories/bookRepository')
 const borrowRepository = require('../../domain/repositories/borrowRepository')
 const sequelize = require('../../infrastructure/database/models').sequelize
 const date = require('../../interfaces/utils/date')
+const response = require('../../interfaces/utils/templateResponeApi')
 
 const createBorrows= async ({codeUser,codeBook, requestId})=>{
     const transaction = await sequelize.transaction()
@@ -16,36 +17,18 @@ const createBorrows= async ({codeUser,codeBook, requestId})=>{
         if (getUser === null) {
             transaction.rollback()
             console.error(`Request ID: ${requestId} - Create Borrow Service Get user || User not found`);
-            return {
-                request_id: requestId,
-                code:404,
-                status: "Error",
-                message: "User not found",
-                data: null
-            }
+            return response.notFound(requestId, "User not found")
         }
         if (getUser.quota <= 0 ){
             await transaction.rollback()
             console.error(`Request ID: ${requestId} - Create Borrow Service Get user || Quota user 0`);
-            return {
-                request_id: requestId,
-                code:400,
-                status: "Error",
-                message: "Quota user 0",
-                data: null
-            }
+            return response.badRequest(requestId, "Quota user 0" )
         }
         if (getUser.penalty_date !== null) {
             if (getUser.penalty_date > new Date()){
                 await transaction.rollback()
                 console.error(`Request ID: ${requestId} - Create Borrow Service Get user || User has penalty`);
-                return {
-                    request_id: requestId,
-                    code: 400,
-                    status: "Error",
-                    message: `User has penalty after ${getUser.penalty_date.toUTCString()}`,
-                    data: null
-                }
+                return response.badRequest(requestId, `User has penalty after ${getUser.penalty_date.toUTCString()}`)
             } else {
                 await userRepository.update({params:{penalty_date:null}, code:codeUser, requestId, transaction})
             }
@@ -55,24 +38,12 @@ const createBorrows= async ({codeUser,codeBook, requestId})=>{
         if (getBooks === null) {
             await transaction.rollback()
             console.error(`Request ID: ${requestId} - Create Borrow Service Get book || Book not found`);
-            return {
-                request_id: requestId,
-                code:404,
-                status: "Error",
-                message: "Book not found",
-                data: null
-            }
+            return response.notFound(requestId, "Book not found")
         }
         if (getBooks.stock <= 0 ) {
             await transaction.rollback()
             console.error(`Request ID: ${requestId} - Create Borrow Service Get book || Book stock is 0`);
-            return {
-                request_id: requestId,
-                code:404,
-                status: "Error",
-                message: "Book stock is 0",
-                data: null
-            }
+            return response.notFound(requestId, "Book stock is 0")
         }
 
         // update create borrow & update user, book of stock
@@ -105,24 +76,23 @@ const createBorrows= async ({codeUser,codeBook, requestId})=>{
             checkout_date: now,
             due_date: dueDate,
         }
-        return {
-            request_id: requestId,
-            code:201,
-            status: "Success",
-            message: "Success Create Borrow",
-            data: data
-        }
+        return response.created(requestId, data, "Success Create Borrow")
     } catch (e){
         await transaction.rollback()
         console.error(`Request ID: ${requestId} - Borrow Create Service error:`, e.message);
-        return {
-            request_id: requestId,
-            code:500,
-            status: "Error",
-            message: "Internal Server Error",
-            data: null,
-        };
+        return response.internalServerError(requestId)
     }
 }
 
-module.exports={createBorrows}
+const returnBorrows= async ({codeUser,codeBook, requestId})=>{
+    const transaction = await sequelize.transaction()
+    try {
+        
+    } catch (e) {
+        await transaction.rollback()
+        console.error(`Request ID: ${requestId} - Borrow Return Service error:`, e.message);
+        return response.internalServerError(requestId)
+    }
+}
+
+module.exports={createBorrows,returnBorrows}

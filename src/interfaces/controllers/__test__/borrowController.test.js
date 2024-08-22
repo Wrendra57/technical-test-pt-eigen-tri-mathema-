@@ -1,5 +1,5 @@
 const borrowService = require('../../../application/services/borrowService')
-const toTemplateResponseApi = require("../../utils/templateResponeApi");
+const {toTemplateResponseApi} = require("../../utils/templateResponeApi");
 const {createBorrows} = require("../borrowController");
 
 jest.mock('../../../application/services/borrowService')

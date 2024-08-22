@@ -96,7 +96,7 @@ describe('createBooks || create Book Service', () => {
 
         expect(result).toEqual({
             request_id: requestId,
-            code: 200,
+            code: 201,
             status: "Success",
             message: "Success Create Books",
             data: mockBooks

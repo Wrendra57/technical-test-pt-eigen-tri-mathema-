@@ -156,7 +156,7 @@ describe('Test Create User || POST /api/users', ()=>{
             .post(url)
             .send({name: 'john'})
             .then((res)=>{
-                expect(res.status).toBe(200);
+                expect(res.status).toBe(201);
                 expect(res.body.data).not.toEqual(null)
                 expect(res.body.status).toEqual("Success")
                 expect(res.body.message).toEqual("Success Create Data Users")

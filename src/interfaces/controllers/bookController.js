@@ -1,5 +1,5 @@
 const bookService = require('../../application/services/bookService')
-const toTemplateResponseApi = require('../utils/templateResponeApi')
+const {toTemplateResponseApi} = require('../utils/templateResponeApi')
 
 const getListBooks = async (req, res) => {
     const requestId = req.requestId
