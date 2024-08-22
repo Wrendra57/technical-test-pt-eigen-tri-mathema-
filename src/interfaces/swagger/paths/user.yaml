@@ -2,7 +2,10 @@ paths:
   /api/users:
     get:
       summary: Get all users
-      description: Get all users with default limit 5 and pagination 1
+      description: | 
+        This endpoint retrieves a list of users with optional pagination. The following query parameters are supported:
+        - **limit**: Specifies the maximum number of users to return. Must be a positive integer. Defaults to 5 if not provided.
+        - **offset**: Specifies the page number. Must be a positive integer. Defaults to 1 if not provided.
       parameters:
         - name: limit
           in: query
@@ -68,7 +71,16 @@ paths:
                         default: null
     post:
       summary: Create a user
-      description: Create a user with name, quota default 2
+      description: |
+        This endpoint allows you to create a new user with the following validation rules:
+        - **name**: Required, must be a string with 3-255 characters, and only contain alphabetic characters.
+
+        Example of a valid request:
+        ```json
+        {
+          "name": "John Doe"
+        }
+        ```
       requestBody:
         required: true
         content:
@@ -80,7 +92,12 @@ paths:
               properties:
                 name:
                   type: string
-                  description: User name
+                  description: |
+                    The name of the user. Must satisfy the following conditions:
+                    - Required
+                    - Must be at least 3 characters and a maximum of 255 characters
+                    - Must only contain alphabetic characters (A-Z, a-z)
+                  example: "John Doe"
       tags:
         - User API
       responses:

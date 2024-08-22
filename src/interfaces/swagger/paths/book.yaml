@@ -2,20 +2,25 @@ paths:
   /api/books:
     get:
       summary: Get all books
-      description: Get all books with default limit 5 and pagination 1
+      description: |
+        This endpoint retrieves a list of books with optional pagination. The following query parameters are supported:
+        - **limit**: Specifies the maximum number of books to return. Must be a positive integer. Defaults to 5 if not provided.
+        - **offset**: Specifies the page number. Must be a positive integer. Defaults to 1 if not provided.
       parameters:
         - name: limit
           in: query
-          description: Limit of books to return, min 1
+          description: The maximum number of books to return.
           required: false
           schema:
             type: integer
+            minimum: 1
         - name: page
           in: query
-          description: Page number to return, min 1
+          description:  The page number to retrieve.
           required: false
           schema:
             type: integer
+            minimum: 1
       tags:
         - Book API
       responses:
@@ -62,7 +67,22 @@ paths:
                         default: null
     post:
       summary: Create a book
-      description: Create a book
+      description: |
+        This endpoint allows you to create a new book with the following validation rules:
+        - **code**: Required, must be a string with 2-10 characters.
+        - **title**: Required, must be a string with 2-255 characters.
+        - **author**: Required, must be a string with 2-255 characters.
+        - **stock**: Required, must be a positive integer.
+
+        Example of a valid request:
+        ```json
+        {
+          "code": "MH-01",
+          "title": "Harry Potter",
+          "author": "J.K. Rowling",
+          "stock": 5
+        }
+        ```
       requestBody:
         required: true
         content:
@@ -72,16 +92,32 @@ paths:
               properties:
                 code:
                   type: string
-                  description: Book code
+                  description: "Unique code for the book, must be 2-10 characters."
+                  minLength: 2
+                  maxLength: 10
+                  example: "MH-0s221s"
                 title:
                   type: string
-                  description: Book title
+                  description: "Title of the book, must be 2-255 characters."
+                  minLength: 2
+                  maxLength: 255
+                  example: "mahendraw"
                 author:
                   type: string
-                  description: Author
+                  description: "Author of the book, must be 2-255 characters."
+                  minLength: 2
+                  maxLength: 255
+                  example: "wahyu rendra"
                 stock:
                   type: integer
-                  description: Stock
+                  description: "Stock of the book, must be a positive integer."
+                  minimum: 1
+                  example: 5
+                required:
+                  - code
+                  - title
+                  - author
+                  - stock
       tags:
         - Book API
       responses:
