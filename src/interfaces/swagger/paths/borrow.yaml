@@ -1,0 +1,222 @@
+paths:
+  /api/borrows:
+    post:
+      summary: Create a new borrowing record
+      description: |
+        This endpoint allows you to create a new borrowing record with the following validation rules:
+        - **codeUser**: Required, must be a string with 2-10 characters, and only contain numbers, alphabets, and the `-` character.
+        - **codeBook**: Required, must be a string with 2-10 characters, and only contain numbers, alphabets, and the `-` character.
+        
+        Example of a valid request:
+        ```json
+        {
+          "codeUser": "USR-001",
+          "codeBook": "BK-123"
+        }
+        ```
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                codeUser:
+                  type: string
+                  description: |
+                    The user code. Must satisfy the following conditions:
+                    - Required
+                    - Must be at least 2 characters and a maximum of 10 characters
+                    - Must only contain numbers, alphabets, and the `-` character
+                  example: "USR-001"
+                codeBook:
+                  type: string
+                  description: |
+                    The book code. Must satisfy the following conditions:
+                    - Required
+                    - Must be at least 2 characters and a maximum of 10 characters
+                    - Must only contain numbers, alphabets, and the `-` character
+                  example: "BK-123"
+              required:
+                - codeUser
+                - codeBook
+      tags:
+        - Borrow API
+      responses:
+        '201':
+          description: Success Create Borrow
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/JsendResponse'
+                  - properties:
+                      data:
+                        $ref: '#/components/schemas/BorrowedBook'
+        '400':
+          description: Bad request, invalid data
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/JsendResponse'
+                  - properties:
+                      data:
+                        type: string
+                        nullable: true
+                        default: null
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/JsendResponse'
+                  - properties:
+                      data:
+                        type: string
+                        nullable: true
+                        default: null
+  /api/borrows/return:
+    post:
+      summary: Return a borrowed book
+      description: |
+        This endpoint allows you to return a borrowed book. You must provide either a `borrow_id` or both `code_user` and `code_book`. The following validation rules apply:
+        - **borrow_id**: Optional, must be a positive integer.
+        - **code_user**: Optional, must be a string with 2-10 characters, and only contain numbers, alphabets, and the `-` character.
+        - **code_book**: Optional, must be a string with 2-10 characters, and only contain numbers, alphabets, and the `-` character.
+
+        Either `borrow_id` or both `code_user` and `code_book` are required to process the return.
+
+        Example of a valid request:
+        ```json
+        {
+          "borrow_id": 7
+        }
+        ```
+
+        OR
+
+        ```json
+        {
+          "code_user": "USR-001",
+          "code_book": "BK-123"
+        }
+        ```
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                borrow_id:
+                  type: integer
+                  description: |
+                    Unique identifier for the borrowing record. Must satisfy the following conditions:
+                    - Optional
+                    - Must be a positive integer
+                  example: 7
+                code_user:
+                  type: string
+                  description: |
+                    The user code. Must satisfy the following conditions:
+                    - Optional
+                    - Must be at least 2 characters and a maximum of 10 characters
+                    - Must only contain numbers, alphabets, and the `-` character
+                  example: "USR-001"
+                code_book:
+                  type: string
+                  description: |
+                    The book code. Must satisfy the following conditions:
+                    - Optional
+                    - Must be at least 2 characters and a maximum of 10 characters
+                    - Must only contain numbers, alphabets, and the `-` character
+                  example: "BK-123"
+      tags:
+        - Borrow API
+      responses:
+        '200':
+          description: Success return Borrow book
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/JsendResponse'
+                  - properties:
+                      data:
+                        type: object
+                        properties:
+                          GetBorrow:
+                            type: object
+                            properties:
+                              id:
+                                type: integer
+                                description: "Unique identifier for the borrowing record."
+                                example: 7
+                              book_id:
+                                type: string
+                                description: "Unique identifier for the book."
+                                example: "JK-45"
+                              user_id:
+                                type: string
+                                description: "Unique identifier for the user."
+                                example: "M002"
+                              checkout_at:
+                                type: string
+                                format: date-time
+                                description: "The date and time when the book was checked out."
+                                example: "2024-08-23T06:51:42.422Z"
+                              due_date:
+                                type: string
+                                format: date-time
+                                description: "The due date and time when the book should be returned."
+                                example: "2024-08-30T06:51:42.422Z"
+                              return_date:
+                                type: string
+                                format: date-time
+                                nullable: true
+                                description: "The date and time when the book was returned. Can be null if not returned yet."
+                                example: null
+                              created_at:
+                                type: string
+                                format: date-time
+                                description: "Timestamp of when the borrowing record was created."
+                                example: "2024-08-23T06:51:42.422Z"
+                              updated_at:
+                                type: string
+                                format: date-time
+                                description: "Timestamp of the last update to the borrowing record."
+                                example: "2024-08-23T06:51:42.422Z"
+                              deleted_at:
+                                type: string
+                                format: date-time
+                                nullable: true
+                                description: "Timestamp of when the borrowing record was deleted. Can be null if not deleted."
+                                example: null
+
+        '400':
+          description: Bad request, invalid data
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/JsendResponse'
+                  - properties:
+                      data:
+                        type: string
+                        nullable: true
+                        default: null
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/JsendResponse'
+                  - properties:
+                      data:
+                        type: string
+                        nullable: true
+                        default: null
+

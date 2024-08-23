@@ -18,4 +18,4 @@ module.exports = {
         ]
     },
     apis:['./**/*.yaml'],
-} 
+}

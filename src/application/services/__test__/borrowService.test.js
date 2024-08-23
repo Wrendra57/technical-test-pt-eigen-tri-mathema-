@@ -78,6 +78,7 @@ describe("Create Borrow Service", () => {
         const result = await createBorrows({ codeUser:mockUser.code, codeBook:mockBooks.code, requestId: requestId })
 
         const data = {
+            id: 1,
             book:{
                 code:mockBooks.code,
                 title:mockBooks.title,
@@ -124,6 +125,7 @@ describe("Create Borrow Service", () => {
         const result = await createBorrows({ codeUser:mockUser.code, codeBook:mockBooks.code, requestId: requestId })
 
         const data = {
+            id:mockBorrow.id,
             book:{
                 code:mockBooks.code,
                 title:mockBooks.title,

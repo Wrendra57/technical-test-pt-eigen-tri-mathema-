@@ -3,3 +3,5 @@ tags:
     description: User endpoints
   - name: Book API
     description: Book endpoints
+  - name: Borrow API
+    description: Borrow endpoints

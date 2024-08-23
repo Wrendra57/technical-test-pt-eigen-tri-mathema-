@@ -54,13 +54,14 @@ const createBorrows= async ({codeUser,codeBook, requestId})=>{
             checkout_at: now,
             due_date: dueDate,
         }
-       await Promise.all([
+       const [borrow]= await Promise.all([
             borrowRepository.insert({params:borrowInsertParams, requestId,transaction}),
             userRepository.update({params:{quota:getUser.quota - 1}, code:codeUser, requestId, transaction}),
             bookRepository.update({params:{stock:getBooks.stock - 1}, code:codeBook, requestId,transaction})
         ])
         await transaction.commit()
         const data = {
+            id: borrow.id,
             book:{
                 code:getBooks.code,
                 title:getBooks.title,

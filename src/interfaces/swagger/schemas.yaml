@@ -142,3 +142,62 @@ components:
           nullable: true
           description: Deleted at
           example: null
+    BorrowedBook:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: "Unique identifier for the borrowing record."
+          example: 7
+        book:
+          type: object
+          properties:
+            code:
+              type: string
+              description: "Unique code of the book."
+              example: "JK-45"
+            title:
+              type: string
+              description: "Title of the book."
+              example: "Harry Potter"
+            author:
+              type: string
+              description: "Author of the book."
+              example: "J.K Rowling"
+            stock:
+              type: integer
+              description: "Number of available copies in stock."
+              example: 2
+
+        user_id:
+          type: object
+          properties:
+            code:
+              type: string
+              description: "Unique code of the user."
+              example: "M002"
+            name:
+              type: string
+              description: "Name of the user."
+              example: "Ferry"
+            quota:
+              type: integer
+              description: "Number of books the user can borrow."
+              example: 2
+            penalty_date:
+              type: string
+              format: date-time
+              nullable: true
+              description: "Penalty date if the user has overdue books."
+              example: null
+
+        checkout_date:
+          type: string
+          format: date-time
+          description: "The date and time when the book was checked out."
+          example: "2024-08-23T06:51:42.422Z"
+        due_date:
+          type: string
+          format: date-time
+          description: "The due date and time when the book should be returned."
+          example: "2024-08-30T06:51:42.422Z"
