@@ -1,6 +1,6 @@
 const borrowService = require('../../../application/services/borrowService')
 const {toTemplateResponseApi} = require("../../utils/templateResponeApi");
-const {createBorrows} = require("../borrowController");
+const {createBorrows,returnBorrows} = require("../borrowController");
 
 jest.mock('../../../application/services/borrowService')
 jest.mock("../../utils/templateResponeApi");
@@ -145,3 +145,74 @@ describe('create borrow || borrow controller', () => {
         expect(toTemplateResponseApi).toHaveBeenCalledWith(mockServiceResponse)
     });
 })
+
+describe('Borrow Controller - returnBorrows', () => {
+    let req, res;
+
+    beforeEach(() => {
+        req = {
+            body: {},
+            requestId: 'Test-id',
+        };
+        res = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn(),
+        };
+    });
+
+    afterEach(() => {
+        jest.clearAllMocks();
+    });
+
+    it('should successfully return a borrow record', async () => {
+        const mockResponse = { code: 200, data: { getBorrow: {} }, message: 'Success Return Borrow' };
+        borrowService.returnBorrows.mockResolvedValue(mockResponse);
+        toTemplateResponseApi.mockReturnValue(mockResponse);
+
+        req.body.borrow_id = 1;
+
+        await returnBorrows(req, res);
+
+        expect(borrowService.returnBorrows).toHaveBeenCalledWith({
+            borrowId: 1,
+            codeUser: undefined,
+            codeBook: undefined,
+            requestId: 'Test-id',
+        });
+        expect(res.status).toHaveBeenCalledWith(200);
+        expect(res.json).toHaveBeenCalledWith(mockResponse);
+    });
+
+    it('should fail to return a borrow record when neither borrowId nor both codeUser and codeBook are provided', async () => {
+        req.body.code_user = 'M001';
+
+        await returnBorrows(req, res);
+
+        expect(res.status).toHaveBeenCalledWith(400);
+        expect(res.json).toHaveBeenCalledWith({
+            request_id: 'Test-id',
+            status: 'Error',
+            message: 'Either Borrow ID or both Code Book and Code User are required',
+            data: null,
+        });
+    });
+
+    it('should fail to return a borrow record due to service error', async () => {
+        const mockErrorResponse = { code: 500, message: 'Internal Server Error' };
+        borrowService.returnBorrows.mockResolvedValue(mockErrorResponse);
+        toTemplateResponseApi.mockReturnValue(mockErrorResponse);
+
+        req.body.borrow_id = 1;
+
+        await returnBorrows(req, res);
+
+        expect(borrowService.returnBorrows).toHaveBeenCalledWith({
+            borrowId: 1,
+            codeUser: undefined,
+            codeBook: undefined,
+            requestId: 'Test-id',
+        });
+        expect(res.status).toHaveBeenCalledWith(500);
+        expect(res.json).toHaveBeenCalledWith(mockErrorResponse);
+    });
+});

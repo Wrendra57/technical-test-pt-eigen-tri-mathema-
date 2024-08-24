@@ -15,6 +15,11 @@ module.exports = {
       {code: "M005", name:'Koe', quota:2 },
       {code: "M006", name:'Koe', quota:2 },
       {code: "M007", name:'Koe', quota:2 },
+        {code: "M008", name:'Koe', quota:1 },
+      {code: "M009", name:'Koe', quota:2 },
+      {code: "M010", name:'Koe', quota:2 },
+      {code: "M011", name:'Koe', quota:2 },
+      {code: "M012", name:'Koe', quota:2 },
     ])
   },
 

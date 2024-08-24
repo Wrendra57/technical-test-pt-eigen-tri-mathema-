@@ -1,9 +1,10 @@
 const borrowRepository = require('../../../domain/repositories/borrowRepository');
 const userRepository = require('../../../domain/repositories/userRepository');
 const bookRepository = require('../../../domain/repositories/bookRepository');
-const { createBorrows } = require('../borrowService');
+const { createBorrows,returnBorrows } = require('../borrowService');
 const sequelize = require('../../../infrastructure/database/models').sequelize;
 const date = require('../../../interfaces/utils/date');
+const response = require('../../../interfaces/utils/templateResponeApi');
 
 jest.mock("../../../domain/repositories/borrowRepository");
 jest.mock("../../../domain/repositories/userRepository");
@@ -19,10 +20,11 @@ jest.mock("../../../infrastructure/database/models", ()=>{
         sequelize: new SequelizeMock(),
     };
 })
+jest.mock('../../../interfaces/utils/templateResponeApi');
 jest.mock("../../../interfaces/utils/date");
 
 
-describe("Create Borrow Service", () => {
+describe('createBorrows || Borrow Service unit test createBorrows()', () => {
     let mockTransaction;
 
     beforeEach(() => {
@@ -30,12 +32,135 @@ describe("Create Borrow Service", () => {
             commit: jest.fn(),
             rollback: jest.fn(),
         };
-
         sequelize.transaction.mockResolvedValue(mockTransaction);
     });
+
     afterEach(() => {
         jest.clearAllMocks();
-    })
+    });
+
+    const mockUser = {
+        code: "M001",
+        name: "User Test",
+        quota: 1,
+        penalty_date: null,
+    };
+    const mockBook = {
+        code: "MH-1",
+        title: "Book Test",
+        author: "Author Test",
+        stock: 1,
+    };
+    const requestId = "Test-id";
+
+    it('should successfully create a borrow record', async () => {
+        userRepository.findOneUser.mockResolvedValue(mockUser);
+        bookRepository.findOneBook.mockResolvedValue(mockBook);
+        date.dueDateGenerator.mockResolvedValue({ now: new Date(), dueDate: new Date() });
+        borrowRepository.insert.mockResolvedValue({ id: 1 });
+        userRepository.update.mockResolvedValue({});
+        bookRepository.update.mockResolvedValue({});
+
+        const result = await createBorrows({ codeUser: mockUser.code, codeBook: mockBook.code, requestId });
+
+        expect(result).toEqual(response.created(requestId, expect.any(Object), "Success Create Borrow"));
+        expect(sequelize.transaction).toHaveBeenCalled();
+        expect(userRepository.findOneUser).toHaveBeenCalledWith({ code: mockUser.code, requestId, transaction: mockTransaction });
+        expect(bookRepository.findOneBook).toHaveBeenCalledWith({ code: mockBook.code, requestId, transaction: mockTransaction });
+        expect(borrowRepository.insert).toHaveBeenCalled();
+        expect(userRepository.update).toHaveBeenCalled();
+        expect(bookRepository.update).toHaveBeenCalled();
+        expect(mockTransaction.commit).toHaveBeenCalled();
+    });
+
+    it('should fail to create a borrow record when user not found', async () => {
+        userRepository.findOneUser.mockResolvedValue(null);
+
+        const result = await createBorrows({ codeUser: mockUser.code, codeBook: mockBook.code, requestId });
+
+        expect(result).toEqual(response.notFound(requestId, "User not found"));
+        expect(sequelize.transaction).toHaveBeenCalled();
+        expect(userRepository.findOneUser).toHaveBeenCalledWith({ code: mockUser.code, requestId, transaction: mockTransaction });
+        expect(mockTransaction.rollback).toHaveBeenCalled();
+    });
+
+    it('should fail to create a borrow record when user quota is 0', async () => {
+        const userWithNoQuota = { ...mockUser, quota: 0 };
+        userRepository.findOneUser.mockResolvedValue(userWithNoQuota);
+
+        const result = await createBorrows({ codeUser: mockUser.code, codeBook: mockBook.code, requestId });
+
+        expect(result).toEqual(response.badRequest(requestId, "Quota user 0"));
+        expect(sequelize.transaction).toHaveBeenCalled();
+        expect(userRepository.findOneUser).toHaveBeenCalledWith({ code: mockUser.code, requestId, transaction: mockTransaction });
+        expect(mockTransaction.rollback).toHaveBeenCalled();
+    });
+
+    it('should fail to create a borrow record when user has penalty', async () => {
+        const userWithPenalty = { ...mockUser, penalty_date: new Date(Date.now() + 86400000) }; // penalty date is tomorrow
+        userRepository.findOneUser.mockResolvedValue(userWithPenalty);
+
+        const result = await createBorrows({ codeUser: mockUser.code, codeBook: mockBook.code, requestId });
+
+        expect(result).toEqual(response.badRequest(requestId, `User has penalty after ${userWithPenalty.penalty_date.toUTCString()}`));
+        expect(sequelize.transaction).toHaveBeenCalled();
+        expect(userRepository.findOneUser).toHaveBeenCalledWith({ code: mockUser.code, requestId, transaction: mockTransaction });
+        expect(mockTransaction.rollback).toHaveBeenCalled();
+    });
+
+    it('should fail to create a borrow record when book not found', async () => {
+        userRepository.findOneUser.mockResolvedValue(mockUser);
+        bookRepository.findOneBook.mockResolvedValue(null);
+
+        const result = await createBorrows({ codeUser: mockUser.code, codeBook: mockBook.code, requestId });
+
+        expect(result).toEqual(response.notFound(requestId, "Book not found"));
+        expect(sequelize.transaction).toHaveBeenCalled();
+        expect(userRepository.findOneUser).toHaveBeenCalledWith({ code: mockUser.code, requestId, transaction: mockTransaction });
+        expect(bookRepository.findOneBook).toHaveBeenCalledWith({ code: mockBook.code, requestId, transaction: mockTransaction });
+        expect(mockTransaction.rollback).toHaveBeenCalled();
+    });
+
+    it('should fail to create a borrow record when book stock is 0', async () => {
+        const bookWithNoStock = { ...mockBook, stock: 0 };
+        userRepository.findOneUser.mockResolvedValue(mockUser);
+        bookRepository.findOneBook.mockResolvedValue(bookWithNoStock);
+
+        const result = await createBorrows({ codeUser: mockUser.code, codeBook: mockBook.code, requestId });
+
+        expect(result).toEqual(response.notFound(requestId, "Book stock is 0"));
+        expect(sequelize.transaction).toHaveBeenCalled();
+        expect(userRepository.findOneUser).toHaveBeenCalledWith({ code: mockUser.code, requestId, transaction: mockTransaction });
+        expect(bookRepository.findOneBook).toHaveBeenCalledWith({ code: mockBook.code, requestId, transaction: mockTransaction });
+        expect(mockTransaction.rollback).toHaveBeenCalled();
+    });
+
+    it('should fail to create a borrow record due to internal server error', async () => {
+        userRepository.findOneUser.mockRejectedValue(new Error("Database error"));
+
+        const result = await createBorrows({ codeUser: mockUser.code, codeBook: mockBook.code, requestId });
+
+        expect(result).toEqual(response.internalServerError(requestId));
+        expect(sequelize.transaction).toHaveBeenCalled();
+        expect(userRepository.findOneUser).toHaveBeenCalledWith({ code: mockUser.code, requestId, transaction: mockTransaction });
+        expect(mockTransaction.rollback).toHaveBeenCalled();
+    });
+});
+describe('returnBorrows || Borrow Service unit test returnBorrows()', () => {
+    let mockTransaction;
+
+    beforeEach(() => {
+        mockTransaction = {
+            commit: jest.fn(),
+            rollback: jest.fn(),
+        };
+        sequelize.transaction.mockResolvedValue(mockTransaction);
+    });
+
+    afterEach(() => {
+        jest.clearAllMocks();
+    });
+
     const mockBorrow = {
         id: 1,
         book_id: "MH-1",
@@ -46,290 +171,79 @@ describe("Create Borrow Service", () => {
         created_at: "2024-08-19T12:07:32.081Z",
         updated_at: "2024-08-19T12:07:32.081Z",
         deleted_at: null
-    }
+    };
     const mockUser = {
-        code: "M013",
-        name: "test name",
-        quota: 2,
-        updated_at: "2024-08-19T12:07:32.081Z",
-        created_at: "2024-08-19T12:07:32.081Z",
-        id: 1,
+        code: "M001",
+        name: "User Test",
+        quota: 1,
         penalty_date: null,
-        deleted_at: null,
-    }
-    const mockBooks= {
-        id: 1,
-        code: "JK-01",
-        title: "Books Testing",
-        author: "Books author testing",
+    };
+    const mockBook = {
+        code: "MH-1",
+        title: "Book Test",
+        author: "Author Test",
         stock: 1,
-        created_at: "2024-08-18T12:40:08.128Z",
-        updated_at: "2024-08-18T12:40:08.128Z",
-        deleted_at: null
-    }
-    const requestId="Test-id"
-    it('should return borrow data on success', async () => {
-        userRepository.findOneUser.mockResolvedValue(mockUser)
-        bookRepository.findOneBook.mockResolvedValue(mockBooks)
-        borrowRepository.insert.mockResolvedValue(mockBorrow)
-        userRepository.update.mockResolvedValue([1])
-        bookRepository.update.mockResolvedValue([1])
-        date.dueDateGenerator.mockResolvedValue({now:mockBorrow.checkout_at, dueDate:mockBorrow.due_date})
-        const result = await createBorrows({ codeUser:mockUser.code, codeBook:mockBooks.code, requestId: requestId })
+    };
+    const requestId = "Test-id";
 
-        const data = {
-            id: 1,
-            book:{
-                code:mockBooks.code,
-                title:mockBooks.title,
-                author:mockBooks.author,
-                stock:mockBooks.stock - 1,
-            },
-            user_id:{
-                code:mockUser.code,
-                name:mockUser.name,
-                quota:mockUser.quota - 1,
-                penalty_date:mockUser.penalty_date,
-            },
-            checkout_date: mockBorrow.checkout_at,
-            due_date: mockBorrow.due_date,
-        }
-        expect(result).toEqual({
-            request_id: requestId,
-            code: 201,
-            status: "Success",
-            message: "Success Create Borrow",
-            data:data,
-        })
+    it('should successfully return a borrow record', async () => {
+        borrowRepository.findOne.mockResolvedValue(mockBorrow);
+        userRepository.findOneUser.mockResolvedValue(mockUser);
+        bookRepository.findOneBook.mockResolvedValue(mockBook);
+        date.dueDateGenerator.mockResolvedValue({ now: new Date(), dueDate: new Date() });
 
-        expect(sequelize.transaction).toHaveBeenCalled()
-        expect(userRepository.findOneUser).toHaveBeenCalledWith({ code: mockUser.code, requestId, transaction:mockTransaction })
-        expect(bookRepository.findOneBook).toHaveBeenCalledWith({ code: mockBooks.code, requestId, transaction:mockTransaction })
-        expect(borrowRepository.insert).toHaveBeenCalledWith({ params: { book_id: mockBooks.code, user_id: mockUser.code, checkout_at: mockBorrow.checkout_at, due_date: mockBorrow.due_date }, requestId, transaction:mockTransaction })
-        expect(userRepository.update).toHaveBeenCalledWith({ params: { quota: mockUser.quota - 1 }, code: mockUser.code, requestId, transaction:mockTransaction })
-        expect(bookRepository.update).toHaveBeenCalledWith({ params: { stock: mockBooks.stock - 1 }, code: mockBooks.code, requestId, transaction:mockTransaction })
-        expect(mockTransaction.commit).toHaveBeenCalled()
+        const result = await returnBorrows({ borrowId: mockBorrow.id, codeUser: null, codeBook: null, requestId });
+
+        expect(result).toEqual(response.success(requestId, { getBorrow: mockBorrow }, "Success Return Borrow"));
+        expect(sequelize.transaction).toHaveBeenCalled();
+        expect(borrowRepository.findOne).toHaveBeenCalledWith({ params: { id: mockBorrow.id }, requestId, transaction: mockTransaction });
+        expect(userRepository.findOneUser).toHaveBeenCalledWith({ code: mockBorrow.user_id, requestId, transaction: mockTransaction });
+        expect(bookRepository.findOneBook).toHaveBeenCalledWith({ code: mockBorrow.book_id, requestId, transaction: mockTransaction });
+        expect(mockTransaction.commit).toHaveBeenCalled();
     });
 
-    it('should return borrow data on success with penalty is done', async () => {
-        const dueDate = new Date();
-        dueDate.setDate(new Date().getDate() - 3);
-        const user = mockUser
-        user.penalty_date=dueDate
-        userRepository.findOneUser.mockResolvedValue(user)
-        bookRepository.findOneBook.mockResolvedValue(mockBooks)
-        borrowRepository.insert.mockResolvedValue(mockBorrow)
-        userRepository.update.mockResolvedValue([1])
-        bookRepository.update.mockResolvedValue([1])
-        date.dueDateGenerator.mockResolvedValue({now:mockBorrow.checkout_at, dueDate:mockBorrow.due_date})
-        const result = await createBorrows({ codeUser:mockUser.code, codeBook:mockBooks.code, requestId: requestId })
+    it('should fail to return a borrow record when borrow not found', async () => {
+        borrowRepository.findOne.mockResolvedValue(null);
 
-        const data = {
-            id:mockBorrow.id,
-            book:{
-                code:mockBooks.code,
-                title:mockBooks.title,
-                author:mockBooks.author,
-                stock:mockBooks.stock - 1,
-            },
-            user_id:{
-                code:mockUser.code,
-                name:mockUser.name,
-                quota:mockUser.quota - 1,
-                penalty_date:mockUser.penalty_date,
-            },
-            checkout_date: mockBorrow.checkout_at,
-            due_date: mockBorrow.due_date,
-        }
-        expect(result).toEqual({
-            request_id: requestId,
-            code: 201,
-            status: "Success",
-            message: "Success Create Borrow",
-            data:data,
-        })
+        const result = await returnBorrows({ borrowId: mockBorrow.id, codeUser: null, codeBook: null, requestId });
 
-        expect(sequelize.transaction).toHaveBeenCalled()
-        expect(userRepository.findOneUser).toHaveBeenCalledWith({ code: mockUser.code, requestId, transaction:mockTransaction })
-        expect(bookRepository.findOneBook).toHaveBeenCalledWith({ code: mockBooks.code, requestId, transaction:mockTransaction })
-        expect(borrowRepository.insert).toHaveBeenCalledWith({ params: { book_id: mockBooks.code, user_id: mockUser.code, checkout_at: mockBorrow.checkout_at, due_date: mockBorrow.due_date }, requestId, transaction:mockTransaction })
-        expect(userRepository.update).toHaveBeenCalledWith({ params: { quota: mockUser.quota - 1 }, code: mockUser.code, requestId, transaction:mockTransaction })
-        expect(bookRepository.update).toHaveBeenCalledWith({ params: { stock: mockBooks.stock - 1 }, code: mockBooks.code, requestId, transaction:mockTransaction })
-        expect(mockTransaction.commit).toHaveBeenCalled()
+        expect(result).toEqual(response.notFound(requestId, "Borrow not found"));
+        expect(sequelize.transaction).toHaveBeenCalled();
+        expect(borrowRepository.findOne).toHaveBeenCalledWith({ params: { id: mockBorrow.id }, requestId, transaction: mockTransaction });
+        expect(mockTransaction.rollback).toHaveBeenCalled();
     });
 
-    it('should return error user not found', async () => {
-        userRepository.findOneUser.mockResolvedValue(null)
-        bookRepository.findOneBook.mockResolvedValue(mockBooks)
+    it('should fail to return a borrow record when book has already been returned', async () => {
+        const returnedBorrow = { ...mockBorrow, return_date: new Date() };
+        borrowRepository.findOne.mockResolvedValue(returnedBorrow);
 
-        const result = await createBorrows({ codeUser:mockUser.code, codeBook:mockBooks.code, requestId: requestId })
+        const result = await returnBorrows({ borrowId: mockBorrow.id, codeUser: null, codeBook: null, requestId });
 
-        expect(result).toEqual({
-            request_id: requestId,
-            code: 404,
-            status: "Error",
-            message: "User not found",
-            data:null,
-        })
-
-        expect(sequelize.transaction).toHaveBeenCalled()
-        expect(userRepository.findOneUser).toHaveBeenCalledWith({ code: mockUser.code, requestId, transaction:mockTransaction })
-        expect(bookRepository.findOneBook).toHaveBeenCalledWith({ code: mockBooks.code, requestId, transaction:mockTransaction })
-        expect(mockTransaction.rollback).toHaveBeenCalled()
-    });
-    it('should return error quota user 0', async () => {
-        const user = {
-            code: "M013",
-            name: "test name",
-            quota: 0,
-            updated_at: "2024-08-19T12:07:32.081Z",
-            created_at: "2024-08-19T12:07:32.081Z",
-            id: 1,
-            penalty_date: null,
-            deleted_at: null,
-        }
-        userRepository.findOneUser.mockResolvedValue(user)
-        bookRepository.findOneBook.mockResolvedValue(mockBooks)
-
-        const result = await createBorrows({ codeUser:mockUser.code, codeBook:mockBooks.code, requestId: requestId })
-
-        expect(result).toEqual({
-            request_id: requestId,
-            code: 400,
-            status: "Error",
-            message: "Quota user 0",
-            data:null,
-        })
-
-        expect(sequelize.transaction).toHaveBeenCalled()
-        expect(userRepository.findOneUser).toHaveBeenCalledWith({ code: mockUser.code, requestId, transaction:mockTransaction })
-        expect(bookRepository.findOneBook).toHaveBeenCalledWith({ code: mockBooks.code, requestId, transaction:mockTransaction })
-        expect(mockTransaction.rollback).toHaveBeenCalled()
+        expect(result).toEqual(response.badRequest(requestId, "Book has been returned"));
+        expect(sequelize.transaction).toHaveBeenCalled();
+        expect(borrowRepository.findOne).toHaveBeenCalledWith({ params: { id: mockBorrow.id }, requestId, transaction: mockTransaction });
+        expect(mockTransaction.rollback).toHaveBeenCalled();
     });
 
-    it('should return error user have penalty', async () => {
-        const dueDate = new Date();
-        dueDate.setDate(new Date().getDate() + 3);
-        const user = {
-            code: "M013",
-            name: "test name",
-            quota: 2,
-            updated_at: "2024-08-19T12:07:32.081Z",
-            created_at: "2024-08-19T12:07:32.081Z",
-            id: 1,
-            penalty_date: dueDate,
-            deleted_at: null,
-        }
-        userRepository.findOneUser.mockResolvedValue(user)
-        bookRepository.findOneBook.mockResolvedValue(mockBooks)
+    it('should fail to return a borrow record due to internal server error', async () => {
+        borrowRepository.findOne.mockRejectedValue(new Error("Database error"));
 
-        const result = await createBorrows({ codeUser:mockUser.code, codeBook:mockBooks.code, requestId: requestId })
+        const result = await returnBorrows({ borrowId: mockBorrow.id, codeUser: null, codeBook: null, requestId });
 
-        expect(result).toEqual({
-            request_id: requestId,
-            code: 400,
-            status: "Error",
-            message: `User has penalty after ${dueDate.toUTCString()}`,
-            data:null,
-        })
-
-        expect(sequelize.transaction).toHaveBeenCalled()
-        expect(userRepository.findOneUser).toHaveBeenCalledWith({ code: mockUser.code, requestId, transaction:mockTransaction })
-        expect(bookRepository.findOneBook).toHaveBeenCalledWith({ code: mockBooks.code, requestId, transaction:mockTransaction })
-        expect(mockTransaction.rollback).toHaveBeenCalled()
+        expect(result).toEqual(response.internalServerError(requestId));
+        expect(sequelize.transaction).toHaveBeenCalled();
+        expect(borrowRepository.findOne).toHaveBeenCalledWith({ params: { id: mockBorrow.id }, requestId, transaction: mockTransaction });
+        expect(mockTransaction.rollback).toHaveBeenCalled();
     });
 
-    it('should return error book not found', async () => {
+    it('should fail to return a borrow record when codeUser and codeBook are provided but no matching borrow is found', async () => {
+        borrowRepository.findOne.mockResolvedValue(null);
 
-        userRepository.findOneUser.mockResolvedValue(mockUser)
-        bookRepository.findOneBook.mockResolvedValue(null)
+        const result = await returnBorrows({ codeUser: mockUser.code, codeBook: mockBook.code, requestId });
 
-        const result = await createBorrows({ codeUser:mockUser.code, codeBook:mockBooks.code, requestId: requestId })
-
-        expect(result).toEqual({
-            request_id: requestId,
-            code: 404,
-            status: "Error",
-            message: `Book not found`,
-            data:null,
-        })
-
-        expect(sequelize.transaction).toHaveBeenCalled()
-        expect(userRepository.findOneUser).toHaveBeenCalledWith({ code: mockUser.code, requestId, transaction:mockTransaction })
-        expect(bookRepository.findOneBook).toHaveBeenCalledWith({ code: mockBooks.code, requestId, transaction:mockTransaction })
-        expect(mockTransaction.rollback).toHaveBeenCalled()
+        expect(result).toEqual(response.notFound(requestId, "Borrow not found"));
+        expect(sequelize.transaction).toHaveBeenCalled();
+        expect(borrowRepository.findOne).toHaveBeenCalledWith({ params: { book_id: mockBook.code, user_id: mockUser.code }, requestId, transaction: mockTransaction });
+        expect(mockTransaction.rollback).toHaveBeenCalled();
     });
-
-    it('should return error book out of stock', async () => {
-        const book= {
-            id: 1,
-            code: "JK-01",
-            title: "Books Testing",
-            author: "Books author testing",
-            stock: 0,
-            created_at: "2024-08-18T12:40:08.128Z",
-            updated_at: "2024-08-18T12:40:08.128Z",
-            deleted_at: null
-        }
-        userRepository.findOneUser.mockResolvedValue(mockUser)
-        bookRepository.findOneBook.mockResolvedValue(book)
-
-        const result = await createBorrows({ codeUser:mockUser.code, codeBook:mockBooks.code, requestId: requestId })
-
-        expect(result).toEqual({
-            request_id: requestId,
-            code: 404,
-            status: "Error",
-            message: `Book stock is 0`,
-            data:null,
-        })
-
-        expect(sequelize.transaction).toHaveBeenCalled()
-        expect(userRepository.findOneUser).toHaveBeenCalledWith({ code: mockUser.code, requestId, transaction:mockTransaction })
-        expect(bookRepository.findOneBook).toHaveBeenCalledWith({ code: mockBooks.code, requestId, transaction:mockTransaction })
-        expect(mockTransaction.rollback).toHaveBeenCalled()
-    });
-
-    it('should return error internal server error findOneUser error', async () => {
-
-        userRepository.findOneUser.mockRejectedValue(new Error("Database error"))
-        bookRepository.findOneBook.mockResolvedValue(mockBooks)
-
-        const result = await createBorrows({ codeUser:mockUser.code, codeBook:mockBooks.code, requestId: requestId })
-
-        expect(result).toEqual({
-            request_id: requestId,
-            code: 500,
-            status: "Error",
-            message: `Internal Server Error`,
-            data:null,
-        })
-
-        expect(sequelize.transaction).toHaveBeenCalled()
-        expect(userRepository.findOneUser).toHaveBeenCalledWith({ code: mockUser.code, requestId, transaction:mockTransaction })
-        expect(bookRepository.findOneBook).toHaveBeenCalledWith({ code: mockBooks.code, requestId, transaction:mockTransaction })
-        expect(mockTransaction.rollback).toHaveBeenCalled()
-    });
-
-    it('should return error internal server error findOneBook error', async () => {
-
-        userRepository.findOneUser.mockRejectedValue(mockUser)
-        bookRepository.findOneBook.mockRejectedValue(new Error("Database error"))
-
-        const result = await createBorrows({ codeUser:mockUser.code, codeBook:mockBooks.code, requestId: requestId })
-
-        expect(result).toEqual({
-            request_id: requestId,
-            code: 500,
-            status: "Error",
-            message: `Internal Server Error`,
-            data:null,
-        })
-
-        expect(sequelize.transaction).toHaveBeenCalled()
-        expect(userRepository.findOneUser).toHaveBeenCalledWith({ code: mockUser.code, requestId, transaction:mockTransaction })
-        expect(bookRepository.findOneBook).toHaveBeenCalledWith({ code: mockBooks.code, requestId, transaction:mockTransaction })
-        expect(mockTransaction.rollback).toHaveBeenCalled()
-    });
-
-})
+});

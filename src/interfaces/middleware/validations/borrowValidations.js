@@ -21,6 +21,7 @@ const returnBorrowValidation = yup.object({
     body: yup.object({
         borrow_id: yup
             .number()
+            .typeError("Borrow ID must be a number")
             .integer("Borrow ID must be a number")
             .positive("Borrow ID must be a positive number")
             .notRequired(),

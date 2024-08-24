@@ -17,7 +17,8 @@ const insert = async ({params, requestId, transaction=null}) => {
 
       return await Borrow.create(params, options);
   }catch (error) {
-      console.error(`Request ID: ${requestId} - Insert Book Repository error:`, error.message);
+      console.log(error)
+      console.error(`Request ID: ${requestId} - Insert Borrow Repository error:`, error.message);
       throw new Error("Database query error: " + error.message);
   }
 }

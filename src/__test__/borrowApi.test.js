@@ -30,6 +30,8 @@ describe('Test Create Borrow', () => {
                 codeUser: 'M001'
             })
             .then((res) => {
+                console.log("res body")
+                console.info(res.body)
                 expect(res.status).toBe(201);
                 expect(res.body.data).not.toEqual(null)
                 expect(res.body.status).toEqual("Success")
@@ -46,6 +48,8 @@ describe('Test Create Borrow', () => {
                 codeUser: 'M004'
             })
             .then((res) => {
+                console.log("res body")
+                console.log(res.body)
                 expect(res.status).toBe(201);
                 expect(res.body.data).not.toEqual(null)
                 expect(res.body.status).toEqual("Success")
@@ -366,5 +370,357 @@ describe('Test Create Borrow', () => {
             });
     });
 
+})
+
+describe('Test Return Borrow', () => {
+    afterEach(() => {
+        jest.clearAllMocks();
+        jest.restoreAllMocks();
+    });
+    const url = '/api/borrows/return'
+
+    it('should return 200 OK return borrow and return data user using borrow_id, code_user, code_book', async () => {
+        return request(server)
+            .post(url)
+            .send({
+                borrow_id:2,
+                code_user: 'M008',
+                code_book: 'FM-47'
+            })
+            .then((res) => {
+                expect(res.status).toBe(200);
+                expect(res.body.data).not.toEqual(null)
+                expect(res.body.status).toEqual("Success")
+                expect(res.body.message).toEqual("Success Return Borrow")
+                expect(res.body.request_id).not.toBe(undefined)
+            })
+    });
+    it('should return 200 OK return borrow and return data using borrow_id', async () => {
+        return request(server)
+            .post(url)
+            .send({
+                borrow_id:3,
+            })
+            .then((res) => {
+                expect(res.status).toBe(200);
+                expect(res.body.data).not.toEqual(null)
+                expect(res.body.status).toEqual("Success")
+                expect(res.body.message).toEqual("Success Return Borrow")
+                expect(res.body.request_id).not.toBe(undefined)
+            })
+    });
+    it('should return 200 OK return borrow and return data using code_book & code_user', async () => {
+        return request(server)
+            .post(url)
+            .send({
+                code_user: 'M010',
+                code_book: 'FM-49'
+            })
+            .then((res) => {
+                expect(res.status).toBe(200);
+                expect(res.body.data).not.toEqual(null)
+                expect(res.body.status).toEqual("Success")
+                expect(res.body.message).toEqual("Success Return Borrow")
+                expect(res.body.request_id).not.toBe(undefined)
+            })
+    });
+    it('should return 404 Error with not found borrow data using borrow id', async () => {
+        return request(server)
+            .post(url)
+            .send({
+                borrow_id: 1000
+            })
+            .then((res) => {
+                expect(res.status).toBe(404);
+                expect(res.body.data).toEqual(null)
+                expect(res.body.status).toEqual("Error")
+                expect(res.body.message).toEqual("Borrow not found")
+                expect(res.body.request_id).not.toBe(undefined)
+            })
+    });
+    it('should return 404 Error with not found borrow data using code_user, code_book', async () => {
+        return request(server)
+            .post(url)
+            .send({
+                borrow_id: 1000
+            })
+            .then((res) => {
+                expect(res.status).toBe(404);
+                expect(res.body.data).toEqual(null)
+                expect(res.body.status).toEqual("Error")
+                expect(res.body.message).toEqual("Borrow not found")
+                expect(res.body.request_id).not.toBe(undefined)
+            })
+    });
+    it('should return 404 Error Book has been returned', async () => {
+        return request(server)
+            .post(url)
+            .send({
+                borrow_id: 5
+            })
+            .then((res) => {
+                expect(res.status).toBe(400);
+                expect(res.body.data).toEqual(null)
+                expect(res.body.status).toEqual("Error")
+                expect(res.body.message).toEqual("Book has been returned")
+                expect(res.body.request_id).not.toBe(undefined)
+            })
+    });
+
+    it('should return 200 Ok success return borrow with penalty', async () => {
+        return request(server)
+            .post(url)
+            .send({
+                borrow_id: 6
+            })
+            .then((res) => {
+                expect(res.status).toBe(200);
+                expect(res.body.data).not.toEqual(null)
+                expect(res.body.status).toEqual("Success")
+                expect(res.body.request_id).not.toBe(undefined)
+            })
+    });
+    it('should return 500 Internal server Error || mockBorrowRepositoryFindOne', async () => {
+        const mockBorrowRepositoryFindOne= jest.spyOn(Borrow, 'findOne').mockRejectedValue(new Error('Database error'))
+        return request(server)
+            .post(url)
+            .send({
+                borrow_id:7,
+            })
+            .then((res) => {
+                expect(res.status).toBe(500);
+                expect(res.body.data).toEqual(null)
+                expect(res.body.status).toEqual("Error")
+                expect(res.body.message).toEqual("Internal Server Error")
+                expect(res.body.request_id).not.toBe(undefined)
+            }).finally(() => {
+                mockBorrowRepositoryFindOne.mockRestore();
+            });
+    });
+    it('should return 500 Internal server Error || mockUserRepositoryFindOneUser', async () => {
+        const mockUserRepositoryFindOneUser= jest.spyOn(User, 'findOne').mockRejectedValue(new Error('Database error'))
+        return request(server)
+            .post(url)
+            .send({
+                borrow_id:7,
+            })
+            .then((res) => {
+                expect(res.status).toBe(500);
+                expect(res.body.data).toEqual(null)
+                expect(res.body.status).toEqual("Error")
+                expect(res.body.message).toEqual("Internal Server Error")
+                expect(res.body.request_id).not.toBe(undefined)
+            }).finally(() => {
+                mockUserRepositoryFindOneUser.mockRestore();
+            });
+    });
+    it('should return 500 Internal server Error || mockBookRepositoryFindOneBook', async () => {
+        const mockBookRepositoryFindOneBook= jest.spyOn(Book, 'findOne').mockRejectedValue(new Error('Database error'))
+        return request(server)
+            .post(url)
+            .send({
+                borrow_id:7,
+            })
+            .then((res) => {
+                expect(res.status).toBe(500);
+                expect(res.body.data).toEqual(null)
+                expect(res.body.status).toEqual("Error")
+                expect(res.body.message).toEqual("Internal Server Error")
+                expect(res.body.request_id).not.toBe(undefined)
+            }).finally(() => {
+                mockBookRepositoryFindOneBook.mockRestore();
+            });
+    });
+    it('should return 500 Internal server Error || mockBorrowRepositoryUpdate', async () => {
+        const mockBorrowRepositoryUpdate= jest.spyOn(Borrow, 'update').mockRejectedValue(new Error('Database error'))
+        return request(server)
+            .post(url)
+            .send({
+                borrow_id:7,
+            })
+            .then((res) => {
+                expect(res.status).toBe(500);
+                expect(res.body.data).toEqual(null)
+                expect(res.body.status).toEqual("Error")
+                expect(res.body.message).toEqual("Internal Server Error")
+                expect(res.body.request_id).not.toBe(undefined)
+            }).finally(() => {
+                mockBorrowRepositoryUpdate.mockRestore();
+            });
+    });
+    it('should return 500 Internal server Error || mockBookRepositoryUpdate', async () => {
+        const mockBookRepositoryUpdate= jest.spyOn(Book, 'update').mockRejectedValue(new Error('Database error'))
+        return request(server)
+            .post(url)
+            .send({
+                borrow_id:7,
+            })
+            .then((res) => {
+                expect(res.status).toBe(500);
+                expect(res.body.data).toEqual(null)
+                expect(res.body.status).toEqual("Error")
+                expect(res.body.message).toEqual("Internal Server Error")
+                expect(res.body.request_id).not.toBe(undefined)
+            }).finally(() => {
+                mockBookRepositoryUpdate.mockRestore();
+            });
+    });
+    it('should return 500 Internal server Error || mockUserRepositoryUpdate', async () => {
+        const mockUserRepositoryUpdate= jest.spyOn(User, 'update').mockRejectedValue(new Error('Database error'))
+        return request(server)
+            .post(url)
+            .send({
+                borrow_id:7,
+            })
+            .then((res) => {
+                expect(res.status).toBe(500);
+                expect(res.body.data).toEqual(null)
+                expect(res.body.status).toEqual("Error")
+                expect(res.body.message).toEqual("Internal Server Error")
+                expect(res.body.request_id).not.toBe(undefined)
+            }).finally(() => {
+                mockUserRepositoryUpdate.mockRestore();
+            });
+    });
+    it('should return 400 Error validation || Either Borrow ID or both Code Book and Code User are required', async () => {
+        return request(server)
+            .post(url)
+            .send({
+                code_user:"M005",
+            })
+            .then((res) => {
+                expect(res.status).toBe(400);
+                expect(res.body.data).toEqual(null)
+                expect(res.body.status).toEqual("Error")
+                expect(res.body.message).toEqual("Either Borrow ID or both Code Book and Code User are required")
+                expect(res.body.request_id).not.toBe(undefined)
+            })
+    });
+    it('should return 400 Error validation || borrow_id must be a number', async () => {
+        return request(server)
+            .post(url)
+            .send({
+                borrow_id:"M5",
+            })
+            .then((res) => {
+                expect(res.status).toBe(400);
+                expect(res.body.data).toEqual(null)
+                expect(res.body.status).toEqual("Error")
+                expect(res.body.message).toEqual("Borrow ID must be a number")
+                expect(res.body.request_id).not.toBe(undefined)
+            })
+    });
+    it('should return 400 Error validation || Borrow ID must be a number', async () => {
+        return request(server)
+            .post(url)
+            .send({
+                borrow_id:"5.4",
+            })
+            .then((res) => {
+                expect(res.status).toBe(400);
+                expect(res.body.data).toEqual(null)
+                expect(res.body.status).toEqual("Error")
+                expect(res.body.message).toEqual("Borrow ID must be a number")
+                expect(res.body.request_id).not.toBe(undefined)
+            })
+    });
+    it('should return 400 Error validation || Borrow ID must be a positive number', async () => {
+        return request(server)
+            .post(url)
+            .send({
+                borrow_id:"-5",
+            })
+            .then((res) => {
+                expect(res.status).toBe(400);
+                expect(res.body.data).toEqual(null)
+                expect(res.body.status).toEqual("Error")
+                expect(res.body.message).toEqual("Borrow ID must be a positive number")
+                expect(res.body.request_id).not.toBe(undefined)
+            })
+    });
+    it('should return 400 Error validation || Code User must be at least 2 characters', async () => {
+        return request(server)
+            .post(url)
+            .send({
+                code_user:"M",
+            })
+            .then((res) => {
+                expect(res.status).toBe(400);
+                expect(res.body.data).toEqual(null)
+                expect(res.body.status).toEqual("Error")
+                expect(res.body.message).toEqual("Code User must be at least 2 characters")
+                expect(res.body.request_id).not.toBe(undefined)
+            })
+    });
+    it('should return 400 Error validation || Code User must be maximum 10 characters', async () => {
+        return request(server)
+            .post(url)
+            .send({
+                code_user:"MMMMMMMMMMM",
+            })
+            .then((res) => {
+                expect(res.status).toBe(400);
+                expect(res.body.data).toEqual(null)
+                expect(res.body.status).toEqual("Error")
+                expect(res.body.message).toEqual("Code User must be maximum 10 characters")
+                expect(res.body.request_id).not.toBe(undefined)
+            })
+    });
+    it("should return 400 Error validation || Code User must be Number, Alphabet, & \'-\'", async () => {
+        return request(server)
+            .post(url)
+            .send({
+                code_user:"M-01#",
+            })
+            .then((res) => {
+                expect(res.status).toBe(400);
+                expect(res.body.data).toEqual(null)
+                expect(res.body.status).toEqual("Error")
+                expect(res.body.message).toEqual("Code User must be Number, Alphabet, & '-'")
+                expect(res.body.request_id).not.toBe(undefined)
+            })
+    });
+    it("should return 400 Error validation || Code Book must be at least 2 characters", async () => {
+        return request(server)
+            .post(url)
+            .send({
+                code_book:"K",
+            })
+            .then((res) => {
+                expect(res.status).toBe(400);
+                expect(res.body.data).toEqual(null)
+                expect(res.body.status).toEqual("Error")
+                expect(res.body.message).toEqual("Code Book must be at least 2 characters")
+                expect(res.body.request_id).not.toBe(undefined)
+            })
+    });
+    it("should return 400 Error validation || Code Book must be maximum 10 characters", async () => {
+        return request(server)
+            .post(url)
+            .send({
+                code_book:"KKKKKKKKKKKK",
+            })
+            .then((res) => {
+                expect(res.status).toBe(400);
+                expect(res.body.data).toEqual(null)
+                expect(res.body.status).toEqual("Error")
+                expect(res.body.message).toEqual("Code Book must be maximum 10 characters")
+                expect(res.body.request_id).not.toBe(undefined)
+            })
+    });
+    it("should return 400 Error validation || Code Book must be Number, Alphabet, & '-'", async () => {
+        return request(server)
+            .post(url)
+            .send({
+                code_book:"M-0!",
+            })
+            .then((res) => {
+                expect(res.status).toBe(400);
+                expect(res.body.data).toEqual(null)
+                expect(res.body.status).toEqual("Error")
+                expect(res.body.message).toEqual("Code Book must be Number, Alphabet, & '-'")
+                expect(res.body.request_id).not.toBe(undefined)
+            })
+    });
 
 })

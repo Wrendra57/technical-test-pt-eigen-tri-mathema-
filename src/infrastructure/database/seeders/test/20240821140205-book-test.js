@@ -34,6 +34,36 @@ module.exports = {
         author: "test author",
         stock: 1
       },
+      {
+        code: "FM-47",
+        title: "test title 4",
+        author: "test author",
+        stock: 1
+      },
+
+      {
+        code: "FM-48",
+        title: "test title 4",
+        author: "test author",
+        stock: 1
+      },
+      {
+        code: "FM-49",
+        title: "test title 4",
+        author: "test author",
+        stock: 1
+      },{
+        code: "FM-50",
+        title: "test title 4",
+        author: "test author",
+        stock: 1
+      },{
+        code: "FM-51",
+        title: "test title 4",
+        author: "test author",
+        stock: 1
+      },
+
 
     ])
   },

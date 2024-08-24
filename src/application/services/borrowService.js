@@ -54,8 +54,8 @@ const createBorrows= async ({codeUser,codeBook, requestId})=>{
             checkout_at: now,
             due_date: dueDate,
         }
-       const [borrow]= await Promise.all([
-            borrowRepository.insert({params:borrowInsertParams, requestId,transaction}),
+       const [borrow, updateUser, updateBook]= await Promise.all([
+            borrowRepository.insert({params:borrowInsertParams, requestId:requestId,transaction:transaction}),
             userRepository.update({params:{quota:getUser.quota - 1}, code:codeUser, requestId, transaction}),
             bookRepository.update({params:{stock:getBooks.stock - 1}, code:codeBook, requestId,transaction})
         ])
@@ -88,8 +88,9 @@ const createBorrows= async ({codeUser,codeBook, requestId})=>{
 const returnBorrows= async ({borrowId ,codeUser,codeBook, requestId})=>{
     const transaction = await sequelize.transaction()
     try {
+        console.log(borrowId)
         const params={}
-        if (borrowId !== null) {
+        if ( borrowId !== undefined) {
             params.id = borrowId
         } else if (codeBook !==null && codeUser !==null) {
             params.book_id =codeBook
