@@ -42,6 +42,7 @@ const findAll = async ({limit, offset,requestId}) => {
       } })
     return {users: users[0], totalUser: totalUser};
   } catch (error) {
+    console.error(error)
     console.error(`Request ID: ${requestId} - User Repository error:`, error.message);
     throw new Error("Database query error: " + error.message);
   }
